@@ -68,9 +68,17 @@ def main(cfg: Cfg):
 
     if not cells:
         raise SystemExit(f"no world_*.mp4 found in {cfg.eval_dirs}")
+    # Drop unreadable/incomplete videos (e.g. an eval still writing the file).
+    probed = [(c, _dur(c[1])) for c in cells]
+    skipped = [c[1] for c, d in probed if d <= 0]
+    if skipped:
+        print(f"[grid] skipping {len(skipped)} unreadable/incomplete: {skipped}")
+    cells = [c for c, d in probed if d > 0]
+    if not cells:
+        raise SystemExit("no readable videos (all incomplete?)")
     ncols = cfg.cols or max(per_dir_cols or [1])
     n = len(cells)
-    maxdur = max(_dur(p) for _, p in cells)
+    maxdur = max(d for _, d in probed if d > 0)
 
     inputs = []
     parts = []
