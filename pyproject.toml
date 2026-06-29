@@ -24,6 +24,9 @@ dependencies = [
     "mcap-protobuf-support",
     # Optional: W&B logging in train.py (off by default; --log-wandb to enable).
     "wandb",
+    # RABC variant: lerobot_to_abc.py / convert_parallel.py read LeRobot v3 parquets.
+    "pyarrow",
+    "pandas",
 ]
 
 [tool.uv.sources]

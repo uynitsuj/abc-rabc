@@ -769,10 +769,16 @@ class DiTPolicy(nn.Module):
         max_action_prefix=0,
         prefix_conditioning_prob=1.0,
         prefix_noise_scale=0.0,
+        per_sample_weight=None,
     ):
         """Flow-matching training loss with optional action-prefix conditioning.
         batch: state (B,14), images dict, actions (B,30,14), task_vec_clip (B,512),
-        optional state_is_masked (B,) bool."""
+        optional state_is_masked (B,) bool.
+
+        per_sample_weight: optional (N,) weights for reward-aligned BC (RABC). When
+        given, the loss is computed per-sample then combined as a weighted normalized
+        sum (sum(loss_i * w_i) / sum(w_i)); zero-weighted samples drop out. None
+        reproduces the original batch-mean loss exactly (vanilla BC)."""
         state = batch["state"]
         actions = batch["actions"]
         N, T_chunk, D_action = actions.shape
@@ -806,10 +812,18 @@ class DiTPolicy(nn.Module):
 
         u_t = noise - actions
         if prefix_mask_expanded is not None:
-            postfix_mask = ~prefix_mask_expanded
-            masked_loss = ((u_t - v_t) ** 2) * postfix_mask.float()
-            return masked_loss.sum() / (postfix_mask.float().sum() * D_action + 1e-8)
-        return F.mse_loss(u_t, v_t)
+            postfix_mask = (~prefix_mask_expanded).float()
+            se = ((u_t - v_t) ** 2) * postfix_mask
+            if per_sample_weight is None:
+                return se.sum() / (postfix_mask.sum() * D_action + 1e-8)
+            per_sample = se.sum(dim=(1, 2)) / (postfix_mask.sum(dim=(1, 2)) * D_action + 1e-8)
+            w = per_sample_weight.to(per_sample.dtype)
+            return (per_sample * w).sum() / (w.sum() + 1e-8)
+        if per_sample_weight is None:
+            return F.mse_loss(u_t, v_t)
+        per_sample = ((u_t - v_t) ** 2).mean(dim=(1, 2))
+        w = per_sample_weight.to(per_sample.dtype)
+        return (per_sample * w).sum() / (w.sum() + 1e-8)
 
     @torch.no_grad()
     def sample_actions(self, batch, num_steps=10, noise=None):

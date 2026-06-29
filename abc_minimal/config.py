@@ -139,10 +139,22 @@ class TrainConfig:
 
     mixture_preset: Literal["bottles"] = "bottles"
     mixture: list[MixtureComponent] = field(default_factory=list)
+    # Single sim task: if set, train on one component (train_sim/val_sim, weight 1.0)
+    # with this task_name. CLI-friendly override for per-task sim runs.
+    sim_task: str | None = None
 
     load_pretrained: bool = False
     dino_bf16: bool = True
     compile: bool = True
+
+    # --- Reward-aligned BC (RABC) ---
+    # When enabled, each training chunk is weighted by its chunk-end reward velocity
+    # (read from a per-episode float64 sidecar `rabc_velocity_file`): weight =
+    # v_end if v_end > rabc_threshold else 0, combined as a weighted normalized sum.
+    # Mirrors the pi0 WARP-BC recipe (final-action, tau=1.0, no clip max). Off => vanilla BC.
+    rabc_enabled: bool = False
+    rabc_threshold: float = 1.0
+    rabc_velocity_file: str = "velocity_repromo.bin"
 
     log_every: int = 20
     val_every: int = 2500
@@ -157,6 +169,8 @@ class TrainConfig:
     model: DiTConfig = field(default_factory=DiTConfig)
 
     def resolve_mixture(self) -> list[MixtureComponent]:
+        if self.sim_task:
+            return [MixtureComponent("train_sim", "val_sim", 1.0, self.sim_task)]
         return self.mixture if self.mixture else MIXTURE_PRESETS[self.mixture_preset]
 
 

@@ -164,10 +164,25 @@ class EpisodeDataset(Dataset):
         default_task_name,
         mask_state_ratio,
         model_config: DiTConfig,
+        rabc_enabled=False,
+        rabc_velocity_file=None,
     ):
         self.episodes = scan_episodes(data_dir, default_task_name, model_config)
         if not self.episodes:
             raise ValueError(f"no episodes found in {data_dir}")
+        self.rabc_enabled = rabc_enabled
+        self.rabc_velocity_file = rabc_velocity_file
+        if rabc_enabled:
+            kept = [e for e in self.episodes if (e[0] / rabc_velocity_file).exists()]
+            if not kept:
+                raise ValueError(
+                    f"rabc_enabled but no episodes in {data_dir} have {rabc_velocity_file}"
+                )
+            dropped = len(self.episodes) - len(kept)
+            if dropped:
+                print(f"[rabc] {data_dir}: dropped {dropped}/{len(self.episodes)} "
+                      f"episodes lacking {rabc_velocity_file}")
+            self.episodes = kept
         self.model_config = model_config
         self.camera_keys = tuple(model_config.camera_keys)
         self.norm_stats = norm_stats
@@ -202,13 +217,22 @@ class EpisodeDataset(Dataset):
         images = augment_and_normalize(
             decode_frame(ep_dir, k, length, source_cameras, self.camera_keys), self.train
         )
-        return {
+        sample = {
             "state": torch.from_numpy(state),
             "actions": torch.from_numpy(actions),
             "images": images,
             "state_is_masked": state_is_masked,
             "prompt": task_name_to_prompt(task_name),
         }
+        if self.rabc_enabled:
+            # chunk-end reward velocity = sidecar[k + chunk_length - 1] (the chunk's
+            # final action), matching the pi0 WARP-BC "final-action" weight.
+            end = k + self.model_config.chunk_length - 1
+            with open(ep_dir / self.rabc_velocity_file, "rb") as f:
+                f.seek(end * 8)
+                v_end = float(np.frombuffer(f.read(8), dtype=np.float64)[0])
+            sample["velocity"] = torch.tensor(v_end, dtype=torch.float32)
+        return sample
 
 
 class MixtureDataset(Dataset):
@@ -231,7 +255,7 @@ class MixtureDataset(Dataset):
 
 
 def collate(samples, camera_keys):
-    return {
+    out = {
         "state": torch.stack([s["state"] for s in samples]),
         "actions": torch.stack([s["actions"] for s in samples]),
         "images": {
@@ -240,6 +264,9 @@ def collate(samples, camera_keys):
         "state_is_masked": torch.tensor([s["state_is_masked"] for s in samples]),
         "prompt": [s["prompt"] for s in samples],
     }
+    if "velocity" in samples[0]:
+        out["velocity"] = torch.stack([s["velocity"] for s in samples])
+    return out
 
 
 def batch_to_device(batch, device, embedder):
@@ -252,6 +279,8 @@ def batch_to_device(batch, device, embedder):
         "state_is_masked": batch["state_is_masked"].to(device, non_blocking=True),
         "task_vec_clip": embedder.encode(batch["prompt"]).to(device, non_blocking=True),
     }
+    if "velocity" in batch:
+        out["velocity"] = batch["velocity"].to(device, non_blocking=True)
     return out
 
 
@@ -345,7 +374,9 @@ def main(config: TrainConfig):
         EpisodeDataset(cache_root / c.train_dir, norm_stats, train=True,
                        default_task_name=c.task_name,
                        mask_state_ratio=config.flow.mask_state_ratio,
-                       model_config=config.model)
+                       model_config=config.model,
+                       rabc_enabled=config.rabc_enabled,
+                       rabc_velocity_file=config.rabc_velocity_file)
         for c in components
     ]
     component_weights = [c.weight for c in components]
@@ -420,11 +451,18 @@ def main(config: TrainConfig):
                 break
             batch = batch_to_device(batch, device, embedder)
 
+            per_sample_weight = None
+            if config.rabc_enabled:
+                v_end = batch["velocity"]
+                per_sample_weight = torch.where(
+                    v_end > config.rabc_threshold, v_end, torch.zeros_like(v_end)
+                )
             loss = model(
                 batch,
                 max_action_prefix=config.flow.max_action_prefix,
                 prefix_conditioning_prob=config.flow.prefix_conditioning_prob,
                 prefix_noise_scale=config.flow.prefix_noise_scale,
+                per_sample_weight=per_sample_weight,
             )
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -437,17 +475,25 @@ def main(config: TrainConfig):
                 loss_d = loss.detach()
                 if distributed:
                     dist.all_reduce(loss_d, op=dist.ReduceOp.AVG)
+                rabc_kept = None
+                if config.rabc_enabled:
+                    rabc_kept = (per_sample_weight > 0).float().mean().detach()
+                    if distributed:
+                        dist.all_reduce(rabc_kept, op=dist.ReduceOp.AVG)
                 if rank == 0:
                     dt = time.monotonic() - t_last
                     t_last = time.monotonic()
                     sps = config.log_every / dt
                     lr = scheduler.get_last_lr()[0]
+                    rabc_msg = f"  rabc_kept {rabc_kept.item():.3f}" if rabc_kept is not None else ""
                     print(f"step {step:6d}  loss {loss_d.item():.4f}  "
-                          f"lr {lr:.2e}  gnorm {grad_norm:.3f}  {sps:.2f} it/s")
+                          f"lr {lr:.2e}  gnorm {grad_norm:.3f}  {sps:.2f} it/s{rabc_msg}")
                     if wandb:
-                        wandb.log({"loss": loss_d.item(), "lr": lr,
-                                   "grad_norm": grad_norm.item(),
-                                   "steps_per_s": sps}, step=step)
+                        log = {"loss": loss_d.item(), "lr": lr,
+                               "grad_norm": grad_norm.item(), "steps_per_s": sps}
+                        if rabc_kept is not None:
+                            log["rabc_kept_frac"] = rabc_kept.item()
+                        wandb.log(log, step=step)
 
             if step % config.val_every == 0:
                 model.eval()
