@@ -50,7 +50,7 @@ class Cfg:
     batch_size: int = 90
     exp_name: Optional[str] = None
     accelerators: List[str] = field(default_factory=lambda: [
-        "A100-80GB:8", "H100:8", "A100-80GB:4", "H200:8", "H100:4", "H200:4"])
+        "A100-80GB:8", "A100-80GB:4", "H100:8", "H100:4", "H200:8", "H200:4", "B200:4"])
     region: str = "us-west-2"
     image_id: str = "ami-067cc81f948e50e06"   # openpi DLAMI (us-west-2); torch reinstalled by uv sync
     disk_size: int = 512
@@ -142,10 +142,16 @@ def main(cfg: Cfg):
     init = "ft" if cfg.load_pretrained else "scratch"
     exp = cfg.exp_name or f"abc_{cfg.task}_{arm}_{init}_{ts}"
 
-    candidates = [{"infra": f"aws/{cfg.region}", "accelerators": a,
-                   "disk_size": cfg.disk_size, "image_id": cfg.image_id}
-                  for a in cfg.accelerators]
-    resources = candidates[0] if len(candidates) == 1 else {"any_of": candidates}
+    # 8/4-GPU 80GB-class instances are scarce in any single AWS region; spread across
+    # AWS regions (each needs its own DLAMI) AND Lambda (GPU-focused, often has capacity
+    # when AWS is exhausted — matches openpi's [aws, lambda]). any_of fails over across all.
+    aws_regions = {"us-west-2": "ami-067cc81f948e50e06", "us-east-1": "ami-0365bff494b18bf93"}
+    candidates = [{"infra": f"aws/{region}", "accelerators": a,
+                   "disk_size": cfg.disk_size, "image_id": image}
+                  for region, image in aws_regions.items() for a in cfg.accelerators]
+    candidates += [{"infra": "lambda", "accelerators": a, "disk_size": cfg.disk_size}
+                   for a in cfg.accelerators]
+    resources = {"any_of": candidates}
 
     sky_cfg = {
         "workdir": ABC_ROOT,
