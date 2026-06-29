@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["numpy", "pyarrow", "torchcodec", "tyro"]
+# dependencies = ["numpy", "pyarrow", "pandas", "torchcodec", "tyro"]
 # ///
 """Convert a LeRobot v3 sim dataset into the ABC-DiT staged training layout.
 

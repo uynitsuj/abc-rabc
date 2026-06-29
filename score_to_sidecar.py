@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["numpy", "pyarrow", "tyro"]
+# dependencies = ["numpy", "pyarrow", "pandas", "tyro"]
 # ///
 """Write per-frame reward-velocity sidecars into the ABC staged dir from a scored
 LeRobot v3 dataset (e.g. the warp_rm_signed_magnitude column injected by a fresh WARP-RM).

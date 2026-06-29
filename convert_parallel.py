@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["numpy", "pyarrow", "tyro"]
+# dependencies = ["numpy", "pyarrow", "pandas", "tyro"]
 # ///
 """Parallel local LeRobot->ABC conversion: split episodes across N processes into
 train_sim/val_sim, then compute per-task norm_stats over the train split.
