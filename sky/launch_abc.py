@@ -38,9 +38,14 @@ TASKS = {
 }
 
 
+# Small-model preset (shared by train + eval): shrink the DiT, keep DINOv3 ViT-B (frozen).
+SMALL_DIT = "--model.hidden-size 512 --model.depth 12 --model.num-heads 8 --optim.vision-lr-scale 0"
+
+
 @dataclass
 class Cfg:
     task: Annotated[str, tyro.conf.Positional] = "put_bottles"
+    small: bool = False                     # small DiT + frozen pretrained DINOv3 ViT-B, scratch, single-GPU
     rabc: bool = False
     velocity_file: str = "velocity_repromo.bin"
     rabc_threshold: float = 1.0
@@ -103,7 +108,7 @@ echo "[INFO] torchrun train.py --sim-task $SIM_TASK --train-steps $TRAIN_STEPS -
 ( while true; do sleep 1200; aws s3 sync cache/finetune_checkpoints "$CKPT_S3" 2>/dev/null; done ) &
 SYNC_PID=$!
 uv run torchrun --standalone --nproc-per-node "$SKYPILOT_NUM_GPUS_PER_NODE" train.py \
-  --sim-task "$SIM_TASK" --train-steps "$TRAIN_STEPS" --batch-size "$BATCH_SIZE" $EXTRA
+  --sim-task "$SIM_TASK" --train-steps "$TRAIN_STEPS" --batch-size "$BATCH_SIZE" $MODEL_FLAGS $EXTRA
 TRAIN_EXIT=$?
 kill $SYNC_PID 2>/dev/null
 echo "[INFO] train exit=$TRAIN_EXIT; final sync to $CKPT_S3"
@@ -139,7 +144,15 @@ def main(cfg: Cfg):
     _, sim_task = TASKS[cfg.task]
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     arm = "rabc" if cfg.rabc else "vanilla"
-    init = "ft" if cfg.load_pretrained else "scratch"
+    # Small-model preset: shrink the DiT, keep pretrained DINOv3 ViT-B (frozen), scratch DiT,
+    # single GPU — fast vanilla-vs-RABC comparison that dodges the 8-GPU capacity blocker.
+    model_flags, accelerators = "", cfg.accelerators
+    load_pretrained, norm_stats, batch_size = cfg.load_pretrained, cfg.norm_stats, cfg.batch_size
+    if cfg.small:
+        model_flags = SMALL_DIT
+        load_pretrained, norm_stats, batch_size = False, "task", 64
+        accelerators = ["A100-80GB:1", "A100:1", "A100-40GB:1", "L40S:1"]
+    init = "small" if cfg.small else ("ft" if load_pretrained else "scratch")
     exp = cfg.exp_name or f"abc_{cfg.task}_{arm}_{init}_{ts}"
 
     # 8/4-GPU 80GB-class instances are scarce in any single AWS region; spread across
@@ -148,9 +161,9 @@ def main(cfg: Cfg):
     aws_regions = {"us-west-2": "ami-067cc81f948e50e06", "us-east-1": "ami-0365bff494b18bf93"}
     candidates = [{"infra": f"aws/{region}", "accelerators": a,
                    "disk_size": cfg.disk_size, "image_id": image}
-                  for region, image in aws_regions.items() for a in cfg.accelerators]
+                  for region, image in aws_regions.items() for a in accelerators]
     candidates += [{"infra": "lambda", "accelerators": a, "disk_size": cfg.disk_size}
-                   for a in cfg.accelerators]
+                   for a in accelerators]
     resources = {"any_of": candidates}
 
     sky_cfg = {
@@ -165,10 +178,11 @@ def main(cfg: Cfg):
             "RABC": "true" if cfg.rabc else "false",
             "VELOCITY_FILE": cfg.velocity_file,
             "RABC_THRESHOLD": str(cfg.rabc_threshold),
-            "LOAD_PRETRAINED": "true" if cfg.load_pretrained else "false",
-            "NORM_STATS_MODE": cfg.norm_stats,
+            "LOAD_PRETRAINED": "true" if load_pretrained else "false",
+            "NORM_STATS_MODE": norm_stats,
             "TRAIN_STEPS": str(cfg.train_steps),
-            "BATCH_SIZE": str(cfg.batch_size),
+            "BATCH_SIZE": str(batch_size),
+            "MODEL_FLAGS": model_flags,
         },
         "resources": resources,
         "setup": SETUP,
