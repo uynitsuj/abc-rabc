@@ -129,6 +129,17 @@ def sample_bottle_pose(
 
 def scene_xml(scene: PutBottlesSimConfig, bottle_scales: np.ndarray, bin_scale: float) -> str:
     root = ET.fromstring(SCENE_XML.read_text())
+    # Config-driven N-bottle scene: strip bottle bodies beyond bottle_count (bodies named
+    # bottle_1..bottle_6; reset positions the first `bottle_count`, and the evaluator's
+    # `active` = number of bottle_*_joint freejoints found). Safe because qpos_indices/init_q
+    # are arm joints looked up by name after the model is built, so removing trailing bottle
+    # bodies doesn't shift them. bottle_count=6 (default) is a no-op.
+    if scene.bottle_count < 6:
+        parent_map = {c: p for p in root.iter() for c in p}
+        for body in list(root.iter("body")):
+            m = re.fullmatch(r"bottle_(\d+)", body.get("name", ""))
+            if m and int(m.group(1)) > scene.bottle_count:
+                parent_map[body].remove(body)
     compiler = root.find("compiler")
     if compiler is not None:
         compiler.set("meshdir", str((ROOT / "assets" / "put_bottles" / "assets").resolve()))
@@ -734,6 +745,67 @@ class SimPolicy:
         return unnormalize(actions_np, self.norm_stats["actions"]).astype(np.float32)
 
 
+# pi0 websocket-client policy.
+#
+# Talks to an openpi policy server (serve_policy.py) over websocket. The server
+# holds the JAX pi0 checkpoint and applies the make_yam_example transform
+# (YamInputs/YamOutputs). This client builds the server obs dict from the ABC
+# env obs, requests a chunk, and returns the (chunk_length, 14) absolute-joint
+# action array in the same convention as DiTPolicy.infer so the eval rollout
+# loop is unchanged. No JAX/torch is imported here.
+
+# pi0 was trained with this exact instruction (config prompt_from_task=True ->
+# the literal string in the sim datasets' meta/tasks.jsonl). The eval env's
+# default prompt ("sim put the plastic bottles in the bin") differs, so we send
+# the training prompt explicitly rather than passing obs["prompt"] through.
+PI0_PROMPT = "Put the plastic bottles in the bin"
+
+# Map ABC env camera_keys -> openpi YAM server camera keys.
+PI0_CAMERA_KEY_MAP = {
+    "top": "top_camera-images-rgb",
+    "left": "left_camera-images-rgb",
+    "right": "right_camera-images-rgb",
+}
+
+
+class Pi0Policy:
+    """Websocket client to an openpi pi0 policy server.
+
+    Mirrors the DiTPolicy interface used by run_eval: `.infer(obs, noise=None)`
+    returns actions (chunk_length, action_dim) np.float32, and
+    `.enable_fast_inference(...)` is a no-op (DiT-specific CUDA-graph capture).
+    """
+
+    def __init__(self, host: str, port: int, *, prompt: str = PI0_PROMPT):
+        # Lazy import so this module still imports where openpi_client is absent.
+        from openpi_client.websocket_client_policy import WebsocketClientPolicy
+
+        self.prompt = prompt
+        self.client = WebsocketClientPolicy(host=host, port=port)
+        meta = self.client.get_server_metadata()
+        print(f"connected to pi0 server {host}:{port} metadata={meta}", flush=True)
+
+    def enable_fast_inference(self, *args: Any, **kwargs: Any) -> None:
+        # No-op: DiT-specific torch.compile + CUDA-graph capture. The pi0 server
+        # manages its own (JAX) inference path.
+        return None
+
+    def infer(self, obs: dict[str, Any], noise: np.ndarray | None = None) -> np.ndarray:
+        # noise is accepted and ignored: the server manages its own sampling.
+        images = obs["images"]
+        server_obs: dict[str, Any] = {
+            "state": np.asarray(obs["state"], dtype=np.float32),
+            "prompt": self.prompt,
+        }
+        for env_key, server_key in PI0_CAMERA_KEY_MAP.items():
+            if env_key in images:
+                # Env renders CHW uint8; YamInputs accepts CHW (rearranges) or HWC.
+                server_obs[server_key] = np.asarray(images[env_key], dtype=np.uint8)
+        result = self.client.infer(server_obs)
+        actions = np.asarray(result["actions"], dtype=np.float32)
+        return actions
+
+
 # Rollout.
 
 
@@ -783,16 +855,77 @@ def validate_rtc_config(config: SimEvalConfig) -> list[str]:
     return errors
 
 
+def _build_and_write_summary(
+    worlds: list[dict[str, Any]],
+    out_dir: Path,
+    ckpt_path: Any,
+    config: SimEvalConfig,
+    device: str,
+) -> dict[str, Any]:
+    """Build the eval summary over completed worlds and write it atomically.
+
+    Called after each world (so a mid-run crash keeps the partial aggregate)
+    and once more at the end. Atomic write via temp file + rename so a crash
+    during write can't truncate summary.json.
+    """
+    success = np.asarray([w["success"] for w in worlds], dtype=bool)
+    rewards = np.asarray([w["reward"] for w in worlds], dtype=np.float32)
+    max_bottles = np.asarray(
+        [w["final_task_eval"]["max_bottles_in_bin_so_far"] for w in worlds],
+        dtype=np.float32,
+    )
+    summary = {
+        "format": "abc_minimal_put_bottles_eval/v1",
+        "checkpoint": str(ckpt_path),
+        "prompt": config.prompt,
+        "config": asdict(config),
+        "resolved_device": device,
+        "success_rate": float(success.mean()) if success.size else None,
+        "num_success": int(success.sum()),
+        "num_worlds": len(worlds),
+        "mean_reward": float(rewards.mean()) if rewards.size else None,
+        "mean_max_bottles_in_bin": float(max_bottles.mean()) if max_bottles.size else None,
+        "worlds": worlds,
+    }
+    out_path = out_dir / "summary.json"
+    tmp_path = out_dir / "summary.json.tmp"
+    tmp_path.write_text(json.dumps(jsonable(summary), indent=2, sort_keys=True))
+    tmp_path.replace(out_path)
+    return summary
+
+
 def run_eval(config: SimEvalConfig) -> dict[str, Any]:
+    pi0_mode = config.policy_backend == "pi0"
+    if pi0_mode:
+        # Force the BLOCKING full-chunk control scheme for pi0: infer -> roll out
+        # all 30 actions open-loop -> re-infer. No fast_inference (DiT-only graph
+        # capture) and no RTC (DiT-only async overlap). 60 chunks x 30 actions =
+        # 1800 actions, matching the DiT evals' ~61s budget at 120 x 15.
+        from dataclasses import replace
+
+        config = replace(
+            config,
+            execute_chunk_dim=30,
+            fast_inference=False,
+            rtc=False,
+            num_chunks=60,
+        )
+
     model_errors = validate_model_config(config.model)
     config_errors = model_errors + validate_rtc_config(config)
     if config_errors:
         raise ValueError("Invalid sim eval config:\n  - " + "\n  - ".join(config_errors))
 
     require_mjwarp()
-    ckpt_path = local_checkpoint(config.checkpoint)
     device = resolve_device(config.device)
-    policy = SimPolicy(ckpt_path, config, device)
+    if pi0_mode:
+        ckpt_path = f"pi0://{config.pi0_host}:{config.pi0_port}"
+        policy = Pi0Policy(config.pi0_host, config.pi0_port)
+    else:
+        if config.checkpoint is None:
+            raise ValueError("policy_backend='dit' requires --checkpoint")
+        ckpt_path = local_checkpoint(config.checkpoint)
+        policy = SimPolicy(ckpt_path, config, device)
     env = PutBottlesEnv(
         height=config.camera_height,
         width=config.camera_width,
@@ -970,29 +1103,13 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
                 f"steps={steps}",
                 flush=True,
             )
+            # Write summary after every world so a crash mid-run preserves the
+            # aggregate over completed worlds (atomic via temp+rename).
+            _build_and_write_summary(worlds, out_dir, ckpt_path, config, device)
     finally:
         env.close()
 
-    success = np.asarray([w["success"] for w in worlds], dtype=bool)
-    rewards = np.asarray([w["reward"] for w in worlds], dtype=np.float32)
-    max_bottles = np.asarray(
-        [w["final_task_eval"]["max_bottles_in_bin_so_far"] for w in worlds],
-        dtype=np.float32,
-    )
-    summary = {
-        "format": "abc_minimal_put_bottles_eval/v1",
-        "checkpoint": str(ckpt_path),
-        "prompt": config.prompt,
-        "config": asdict(config),
-        "resolved_device": device,
-        "success_rate": float(success.mean()) if success.size else None,
-        "num_success": int(success.sum()),
-        "num_worlds": len(worlds),
-        "mean_reward": float(rewards.mean()) if rewards.size else None,
-        "mean_max_bottles_in_bin": float(max_bottles.mean()) if max_bottles.size else None,
-        "worlds": worlds,
-    }
-    (out_dir / "summary.json").write_text(json.dumps(jsonable(summary), indent=2, sort_keys=True))
+    summary = _build_and_write_summary(worlds, out_dir, ckpt_path, config, device)
     print(
         f"summary: success_rate={summary['success_rate']} "
         f"num_success={summary['num_success']}/{summary['num_worlds']} "

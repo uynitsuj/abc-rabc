@@ -6,3 +6,8 @@ cache/
 uv.lock
 checkpoints/
 outputs/
+cache_repro/
+repro_rabc.py
+staged_put/
+scored_sss15/
+scored_sss30/

@@ -166,6 +166,7 @@ class EpisodeDataset(Dataset):
         model_config: DiTConfig,
         rabc_enabled=False,
         rabc_velocity_file=None,
+        rabc_threshold=1.0,
     ):
         self.episodes = scan_episodes(data_dir, default_task_name, model_config)
         if not self.episodes:
@@ -189,17 +190,51 @@ class EpisodeDataset(Dataset):
         self.train = train
         self.mask_state_ratio = mask_state_ratio
         self.cum = np.cumsum([usable for _, _, usable, _, _ in self.episodes])
+        # openpi "subset" mode (data_loader.py:810 — Subset over precompute_valid_indices):
+        # pre-filter to chunks whose chunk-END velocity exceeds the threshold, so EVERY
+        # sampled chunk carries nonzero RABC weight. This keeps the effective batch full
+        # (no in-batch zeroing of ~79% of samples). The chunk-end index used here MUST be
+        # byte-identical to __getitem__'s `end = k + chunk_length - 1`, else the filter and
+        # the runtime weight disagree (openpi transforms.py:281).
+        self.rabc_index = None
+        if rabc_enabled:
+            cl = model_config.chunk_length
+            parts = []
+            for ei, (ep_dir, length, usable, _, _) in enumerate(self.episodes):
+                vel = np.fromfile(ep_dir / rabc_velocity_file, dtype=np.float64)
+                if len(vel) < length:
+                    raise ValueError(
+                        f"{ep_dir}/{rabc_velocity_file}: {len(vel)} frames < episode "
+                        f"length {length}; cannot read chunk-end velocity")
+                ks = np.arange(int(usable), dtype=np.int64)
+                keep = ks[vel[ks + cl - 1] > rabc_threshold]   # end = k + chunk_length - 1
+                if len(keep):
+                    parts.append(np.stack(
+                        [np.full(len(keep), ei, dtype=np.int64), keep], axis=1))
+            if not parts:
+                raise ValueError(
+                    f"rabc pre-filter left 0 chunks in {data_dir} at threshold {rabc_threshold}")
+            self.rabc_index = np.concatenate(parts, axis=0)   # (M, 2): (ep_idx, k)
+            total = int(self.cum[-1])
+            print(f"[rabc] {data_dir}: kept {len(self.rabc_index)}/{total} chunks "
+                  f"(chunk-end vel > {rabc_threshold}) = {len(self.rabc_index) / total:.1%} effective")
 
     def __len__(self):
+        if self.rabc_index is not None:
+            return len(self.rabc_index)
         return int(self.cum[-1])
 
     def sample(self, rng):
-        global_idx = int(rng.integers(0, int(self.cum[-1])))
+        global_idx = int(rng.integers(0, len(self)))
         return self[global_idx]
 
     def __getitem__(self, global_idx):
-        ep_idx = int(np.searchsorted(self.cum, global_idx, side="right"))
-        k = int(global_idx - (self.cum[ep_idx - 1] if ep_idx > 0 else 0))
+        if self.rabc_index is not None:
+            ep_idx = int(self.rabc_index[global_idx, 0])
+            k = int(self.rabc_index[global_idx, 1])
+        else:
+            ep_idx = int(np.searchsorted(self.cum, global_idx, side="right"))
+            k = int(global_idx - (self.cum[ep_idx - 1] if ep_idx > 0 else 0))
         ep_dir, length, _, source_cameras, task_name = self.episodes[ep_idx]
 
         rows = read_state_action_rows(
@@ -376,7 +411,8 @@ def main(config: TrainConfig):
                        mask_state_ratio=config.flow.mask_state_ratio,
                        model_config=config.model,
                        rabc_enabled=config.rabc_enabled,
-                       rabc_velocity_file=config.rabc_velocity_file)
+                       rabc_velocity_file=config.rabc_velocity_file,
+                       rabc_threshold=config.rabc_threshold)
         for c in components
     ]
     component_weights = [c.weight for c in components]

@@ -177,8 +177,16 @@ class TrainConfig:
 @dataclass
 class SimEvalConfig:
     """MuJoCo-Warp put-bottles evaluation."""
-    checkpoint: str
+    # DiT checkpoint (path or s3://). Optional: not needed when policy_backend="pi0",
+    # since pi0 weights live on the openpi websocket server, not in this process.
+    checkpoint: str | None = None
     norm_stats_path: str | None = None
+    # Policy backend. "dit" = in-process ABC-DiT (default). "pi0" = thin websocket
+    # client to an openpi policy server (server holds the JAX pi0 checkpoint).
+    policy_backend: Literal["dit", "pi0"] = "dit"
+    # openpi policy server host/port for policy_backend="pi0".
+    pi0_host: str = "0.0.0.0"
+    pi0_port: int = 8000
     output_dir: str = field(
         default_factory=lambda: str(
             Path(__file__).resolve().parents[1] / "outputs" / "sim_eval_put_bottles"

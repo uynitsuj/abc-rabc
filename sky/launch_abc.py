@@ -39,13 +39,21 @@ TASKS = {
 
 
 # Small-model preset (shared by train + eval): shrink the DiT, keep DINOv3 ViT-B (frozen).
-SMALL_DIT = "--model.hidden-size 512 --model.depth 12 --model.num-heads 8 --optim.vision-lr-scale 0"
+# --no-compile: torch.compile(fullgraph) segfaults inductor on the RABC per-sample-loss
+# branch; eager works (pre-flight verified). Both arms eager keeps the comparison symmetric.
+SMALL_DIT = "--model.hidden-size 512 --model.depth 12 --model.num-heads 8 --optim.vision-lr-scale 0 --no-compile"
+
+# DiT-L preset: finetune the pretrained lbm_dit_l (1024/24/16, 746M; 3.5k-hr xdof pretrain) — a
+# competent init vs the capacity-capped scratch small model. DINOv3 ViT-B frozen; compile ON (lbm
+# trained compiled, ~2x eager; the RABC loss is compile-safe after the squeeze-rewrite in dit.py).
+DIT_L = "--model.hidden-size 1024 --model.depth 24 --model.num-heads 16 --optim.vision-lr-scale 0"
 
 
 @dataclass
 class Cfg:
     task: Annotated[str, tyro.conf.Positional] = "put_bottles"
     small: bool = False                     # small DiT + frozen pretrained DINOv3 ViT-B, scratch, single-GPU
+    dit_l: bool = False                     # FT pretrained DiT-L (lbm, 1024/24/16, 746M), single A100-80GB
     rabc: bool = False
     velocity_file: str = "velocity_repromo.bin"
     rabc_threshold: float = 1.0
@@ -88,12 +96,14 @@ aws s3 sync "$STAGED_S3/train_sim" cache/train_sim
 aws s3 sync "$STAGED_S3/val_sim" cache/val_sim
 if [ "$NORM_STATS_MODE" = "official" ]; then
   aws s3 cp "$WEIGHTS_S3/norm_stats.json" cache/norm_stats.json
+elif [ "$NORM_STATS_MODE" = "ditl" ]; then
+  aws s3 cp "$WEIGHTS_S3/ditl_sim_norm_stats.json" cache/norm_stats.json
 else
   aws s3 cp "$STAGED_S3/norm_stats.json" cache/norm_stats.json
 fi
 if [ "$LOAD_PRETRAINED" = "true" ]; then
-  echo "[INFO] FT init: pulling bottles_75k.pt"
-  aws s3 cp "$WEIGHTS_S3/bottles_75k.pt" cache/abc_dit_xl_200k_model.pt
+  echo "[INFO] FT init: pulling $INIT_WEIGHTS"
+  aws s3 cp "$WEIGHTS_S3/$INIT_WEIGHTS" cache/abc_dit_xl_200k_model.pt
 else
   echo "[INFO] scratch init: pulling standalone DINOv3 weights"
   aws s3 cp "$WEIGHTS_S3/dinov3_vitb16_pretrain_lvd1689m.pth" cache/dinov3_vitb16_pretrain_lvd1689m.pth
@@ -107,9 +117,19 @@ echo "[INFO] torchrun train.py --sim-task $SIM_TASK --train-steps $TRAIN_STEPS -
 # mid-run for an early read, not just at job end.
 ( while true; do sleep 1200; aws s3 sync cache/finetune_checkpoints "$CKPT_S3" 2>/dev/null; done ) &
 SYNC_PID=$!
-uv run torchrun --standalone --nproc-per-node "$SKYPILOT_NUM_GPUS_PER_NODE" train.py \
-  --sim-task "$SIM_TASK" --train-steps "$TRAIN_STEPS" --batch-size "$BATCH_SIZE" $MODEL_FLAGS $EXTRA
-TRAIN_EXIT=$?
+# PYTHONUNBUFFERED: flush prints so an early crash isn't hidden by block buffering.
+# PYTHONFAULTHANDLER: dump the Python frame on a fatal signal (SIGSEGV) — turns the
+# opaque exitcode -11 we hit on a flaky instance into a localizable traceback.
+run_train() { PYTHONUNBUFFERED=1 PYTHONFAULTHANDLER=1 uv run torchrun --standalone --nproc-per-node "$SKYPILOT_NUM_GPUS_PER_NODE" train.py \
+  --sim-task "$SIM_TASK" --train-steps "$TRAIN_STEPS" --batch-size "$BATCH_SIZE" $MODEL_FLAGS $EXTRA; }
+run_train; TRAIN_EXIT=$?
+# Flaky environmental SIGSEGV (exitcode -11) hits a fraction of launches at startup, before any
+# checkpoint is written — verified NOT a code bug (identical code runs clean locally). Retry once
+# if we died with no checkpoint, so a flaky crash doesn't burn the whole provisioned run.
+if [ "$TRAIN_EXIT" -ne 0 ] && [ -z "$(ls cache/finetune_checkpoints 2>/dev/null)" ]; then
+  echo "[INFO] train exit=$TRAIN_EXIT with no checkpoint — likely flaky startup SIGSEGV; retry 1/1"
+  run_train; TRAIN_EXIT=$?
+fi
 kill $SYNC_PID 2>/dev/null
 echo "[INFO] train exit=$TRAIN_EXIT; final sync to $CKPT_S3"
 aws s3 sync cache/finetune_checkpoints "$CKPT_S3"
@@ -148,11 +168,21 @@ def main(cfg: Cfg):
     # single GPU — fast vanilla-vs-RABC comparison that dodges the 8-GPU capacity blocker.
     model_flags, accelerators = "", cfg.accelerators
     load_pretrained, norm_stats, batch_size = cfg.load_pretrained, cfg.norm_stats, cfg.batch_size
+    init_weights = "bottles_75k.pt"
     if cfg.small:
         model_flags = SMALL_DIT
         load_pretrained, norm_stats, batch_size = False, "task", 64
         accelerators = ["A100-80GB:1", "A100:1", "A100-40GB:1", "L40S:1"]
-    init = "small" if cfg.small else ("ft" if load_pretrained else "scratch")
+    elif cfg.dit_l:
+        # FT pretrained DiT-L (lbm_dit_l) on the sim task; lbm sim norm_stats; single A100-80GB.
+        model_flags = DIT_L
+        load_pretrained, norm_stats, batch_size = True, "ditl", 32
+        init_weights = "lbm_dit_l_50000.ckpt"
+        # A100-80GB exists only as :8 (p4de) — no single-A100-80GB SKU on AWS/Lambda. The 746M
+        # DiT-L fits ~20GB @ bs32, so use single-GPU cards that fit: L40S:1 (48GB, AWS g6e) or
+        # A100:1/A100-40GB:1 (40GB, Lambda single-GPU). Same valid set the small runs ran on.
+        accelerators = ["A100:1", "A100-40GB:1", "L40S:1"]
+    init = "ditl" if cfg.dit_l else ("small" if cfg.small else ("ft" if load_pretrained else "scratch"))
     exp = cfg.exp_name or f"abc_{cfg.task}_{arm}_{init}_{ts}"
 
     # 8/4-GPU 80GB-class instances are scarce in any single AWS region; spread across
@@ -162,6 +192,9 @@ def main(cfg: Cfg):
     candidates = [{"infra": f"aws/{region}", "accelerators": a,
                    "disk_size": cfg.disk_size, "image_id": image}
                   for region, image in aws_regions.items() for a in accelerators]
+    # Lambda has valid single-GPU A100:1/A100-40GB:1 (40GB), AWS has L40S:1 (48GB) — the any_of
+    # tolerates the invalid candidates (e.g. AWS A100:1, which is 8-GPU-only) as long as one
+    # valid candidate exists, so the precheck passes and provisions whichever is available.
     candidates += [{"infra": "lambda", "accelerators": a, "disk_size": cfg.disk_size}
                    for a in accelerators]
     resources = {"any_of": candidates}
@@ -183,6 +216,7 @@ def main(cfg: Cfg):
             "TRAIN_STEPS": str(cfg.train_steps),
             "BATCH_SIZE": str(batch_size),
             "MODEL_FLAGS": model_flags,
+            "INIT_WEIGHTS": init_weights,
         },
         "resources": resources,
         "setup": SETUP,

@@ -816,7 +816,11 @@ class DiTPolicy(nn.Module):
             se = ((u_t - v_t) ** 2) * postfix_mask
             if per_sample_weight is None:
                 return se.sum() / (postfix_mask.sum() * D_action + 1e-8)
-            per_sample = se.sum(dim=(1, 2)) / (postfix_mask.sum(dim=(1, 2)) * D_action + 1e-8)
+            # Squeeze the singleton mask dim before reducing: reducing (N,T,1) over dims
+            # (1,2) is a torch.compile/inductor sharp edge; squeeze(-1).sum(1) is equivalent
+            # and codegen-safe, so the compiled DiT-L RABC arms don't hit it.
+            postfix_count = postfix_mask.squeeze(-1).sum(dim=1)
+            per_sample = se.sum(dim=(1, 2)) / (postfix_count * D_action + 1e-8)
             w = per_sample_weight.to(per_sample.dtype)
             return (per_sample * w).sum() / (w.sum() + 1e-8)
         if per_sample_weight is None:
