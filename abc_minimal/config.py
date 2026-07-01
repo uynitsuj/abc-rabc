@@ -82,6 +82,11 @@ class DiTConfig:
     vision_pool_num_heads: int = 8
     vision_pool_mlp_ratio: int = 4
 
+    # Idea 4 (velocity conditioning): add a zero-init additive velocity term to the AdaLN
+    # conditioning `c`. Off by default; the new params (v_embedder/v_proj) are tolerated-missing
+    # by load_pretrained so a finetune from a pre-Idea4 base checkpoint still loads.
+    velocity_conditioning: bool = False
+
 
 @dataclass
 class PutBottlesSimConfig:

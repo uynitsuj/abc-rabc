@@ -1,0 +1,26 @@
+{
+  "task_name": "sim_put_the_plastic_bottles_in_the_bin",
+  "cameras": [
+    "top",
+    "left",
+    "right"
+  ],
+  "camera_resolutions": {
+    "top": [
+      224,
+      168
+    ],
+    "left": [
+      224,
+      168
+    ],
+    "right": [
+      224,
+      168
+    ]
+  },
+  "alignment": "mjgl_v3_30hz_fallback",
+  "num_steps": 862,
+  "source_episode_id": "episode_019e2857-cb9b-7545-b40b-9f7fab1234f6",
+  "renderer": "mjgl"
+}

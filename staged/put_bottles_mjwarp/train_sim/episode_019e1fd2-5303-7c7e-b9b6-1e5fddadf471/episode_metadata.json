@@ -1,0 +1,27 @@
+{
+  "task_name": "sim_put_the_plastic_bottles_in_the_bin",
+  "cameras": [
+    "top",
+    "left",
+    "right"
+  ],
+  "camera_resolutions": {
+    "top": [
+      224,
+      168
+    ],
+    "left": [
+      224,
+      168
+    ],
+    "right": [
+      224,
+      168
+    ]
+  },
+  "alignment": "mjwarp_rerender_integration_state_1to1",
+  "num_steps": 806,
+  "source_episode_id": "019e1fd2-5303-7c7e-b9b6-1e5fddadf471",
+  "renderer": "mjwarp",
+  "asset_root": "/home/ubuntu/render_assets"
+}

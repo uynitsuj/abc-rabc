@@ -674,6 +674,13 @@ class DiTPolicy(nn.Module):
         self.img_proj = nn.Linear(config.vit_embed_dim, H)
         self.img_proj.requires_grad_(False)
         self.t_embedder = TimestepEmbedder(H)
+        # Idea 4: velocity conditioning — sinusoidal scalar embed + zero-init projection, so a
+        # finetune from a base checkpoint starts identical (the term is a no-op until trained).
+        if getattr(config, "velocity_conditioning", False):
+            self.v_embedder = TimestepEmbedder(H)
+            self.v_proj = nn.Linear(H, H)
+            nn.init.zeros_(self.v_proj.weight)
+            nn.init.zeros_(self.v_proj.bias)
         self.pos_embed = nn.Parameter(torch.zeros(1, config.chunk_length, H), requires_grad=False)
 
         self.img_backbone = DinoVisionBackbone(config)
@@ -734,8 +741,9 @@ class DiTPolicy(nn.Module):
         vision_tokens = vision_tokens + cam_emb[None, :, None, :]
         return vision_tokens.reshape(B, Nc * K, -1)
 
-    def compute_cond(self, state, task_vec_clip, t_cond):
+    def compute_cond(self, state, task_vec_clip, t_cond, v_cond=None):
         """state (B,14); task_vec_clip (B,512); t_cond (B,) or (B,T).
+        v_cond (B,) or (B,T): optional per-chunk RM velocity (Idea 4).
         Returns conditioning c: (B,H) or (B,T,H)."""
         model_dtype = self.x_embedder.weight.dtype
         cond_dtype = self.cond_proj[0].weight.dtype
@@ -752,8 +760,16 @@ class DiTPolicy(nn.Module):
         cond_concat = torch.cat(cond_parts, dim=-1).to(cond_dtype)
         if cond_dtype == torch.float32 and cond_concat.is_cuda:
             with torch.autocast(device_type="cuda", enabled=False):
-                return self.cond_proj(cond_concat).to(model_dtype)
-        return self.cond_proj(cond_concat).to(model_dtype)
+                c = self.cond_proj(cond_concat).to(model_dtype)
+        else:
+            c = self.cond_proj(cond_concat).to(model_dtype)
+        # Idea 4: zero-init additive velocity term — no-op at FT start, learns to use v̂.
+        if v_cond is not None and getattr(self, "v_proj", None) is not None:
+            v_emb = self.v_proj(self.v_embedder(v_cond.to(model_dtype)))
+            if c.ndim == 3 and v_emb.ndim == 2:
+                v_emb = v_emb.unsqueeze(1)
+            c = c + v_emb
+        return c
 
     def predict_velocity(self, x_t, c, vision_tokens):
         z = self.y_embedder(x_t) + self.pos_embed.data[:, : x_t.shape[1], :]
@@ -902,6 +918,9 @@ def load_pretrained(model, ckpt_path):
     missing, unexpected = model.load_state_dict(sd, strict=False)
     if unexpected:
         raise RuntimeError(f"unexpected checkpoint keys: {unexpected[:8]}")
+    # Idea 4: velocity-conditioning params (v_embedder/v_proj) are zero-init no-ops that are
+    # absent from pre-Idea4 base checkpoints — tolerate them missing so FT-from-base still loads.
+    missing = [k for k in missing if not (k.startswith("v_embedder.") or k.startswith("v_proj."))]
     if missing:
         raise RuntimeError(f"missing checkpoint keys: {missing[:8]}")
     return ckpt

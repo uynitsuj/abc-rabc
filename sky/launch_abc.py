@@ -31,6 +31,7 @@ ABC_ROOT = "/home/justinyu/abc"
 # task key -> (LeRobot repo, ABC task_name/prompt-source)
 TASKS = {
     "put_bottles": ("sim_put_the_plastic_bottles_in_the_bin_30hz_gop10", "sim_put_the_plastic_bottles_in_the_bin"),
+    "put_bottles_mjwarp": ("sim_put_the_plastic_bottles_in_the_bin_30hz_mjwarp", "sim_put_the_plastic_bottles_in_the_bin"),  # mjwarp-rerendered staged (STAGED_S3=staged/put_bottles_mjwarp)
     "throw_bottles": ("sim_throw_plastic_bottles_in_bin_30hz_gop10", "sim_throw_plastic_bottles_in_bin"),
     "load_plates": ("sim_load_the_plates_into_the_dish_rack_30hz_gop10", "sim_load_the_plates_into_the_dish_rack"),
     "turn_mug": ("sim_turn_the_mug_right_side_up_30hz_gop10", "sim_turn_the_mug_right_side_up"),
@@ -48,12 +49,18 @@ SMALL_DIT = "--model.hidden-size 512 --model.depth 12 --model.num-heads 8 --opti
 # trained compiled, ~2x eager; the RABC loss is compile-safe after the squeeze-rewrite in dit.py).
 DIT_L = "--model.hidden-size 1024 --model.depth 24 --model.num-heads 16 --optim.vision-lr-scale 0"
 
+# DiT-L SCRATCH diagnostic: same dims as DIT_L but the *proven small recipe* — scratch init,
+# task norm_stats, --no-compile. Tests whether DiT-L can reach competence on-task at all,
+# isolating architecture/size from the lbm-init + official-norm + compile that fail in DIT_L.
+DIT_L_SCRATCH = "--model.hidden-size 1024 --model.depth 24 --model.num-heads 16 --optim.vision-lr-scale 0 --no-compile"
+
 
 @dataclass
 class Cfg:
     task: Annotated[str, tyro.conf.Positional] = "put_bottles"
     small: bool = False                     # small DiT + frozen pretrained DINOv3 ViT-B, scratch, single-GPU
     dit_l: bool = False                     # FT pretrained DiT-L (lbm, 1024/24/16, 746M), single A100-80GB
+    dit_l_scratch: bool = False             # DiT-L (1024/24/16) SCRATCH + task-norm + --no-compile (diagnostic)
     rabc: bool = False
     velocity_file: str = "velocity_repromo.bin"
     rabc_threshold: float = 1.0
@@ -124,12 +131,16 @@ run_train() { PYTHONUNBUFFERED=1 PYTHONFAULTHANDLER=1 uv run torchrun --standalo
   --sim-task "$SIM_TASK" --train-steps "$TRAIN_STEPS" --batch-size "$BATCH_SIZE" $MODEL_FLAGS $EXTRA; }
 run_train; TRAIN_EXIT=$?
 # Flaky environmental SIGSEGV (exitcode -11) hits a fraction of launches at startup, before any
-# checkpoint is written — verified NOT a code bug (identical code runs clean locally). Retry once
-# if we died with no checkpoint, so a flaky crash doesn't burn the whole provisioned run.
-if [ "$TRAIN_EXIT" -ne 0 ] && [ -z "$(ls cache/finetune_checkpoints 2>/dev/null)" ]; then
-  echo "[INFO] train exit=$TRAIN_EXIT with no checkpoint — likely flaky startup SIGSEGV; retry 1/1"
+# checkpoint is written — verified NOT a code bug (identical code runs clean locally, and other
+# jobs on the identical recipe train fine). It can recur across consecutive attempts (~50%/try
+# observed on the mjwarp DiT-L runs — retry-once was not enough, 2 SIGSEGVs in a row), so retry up
+# to 3 extra times while we still have no checkpoint. P(all 4 fail) ~6%.
+ATTEMPT=1
+while [ "$TRAIN_EXIT" -ne 0 ] && [ -z "$(ls cache/finetune_checkpoints 2>/dev/null)" ] && [ "$ATTEMPT" -le 3 ]; do
+  echo "[INFO] train exit=$TRAIN_EXIT with no checkpoint — likely flaky startup SIGSEGV; retry $ATTEMPT/3"
   run_train; TRAIN_EXIT=$?
-fi
+  ATTEMPT=$((ATTEMPT+1))
+done
 kill $SYNC_PID 2>/dev/null
 echo "[INFO] train exit=$TRAIN_EXIT; final sync to $CKPT_S3"
 aws s3 sync cache/finetune_checkpoints "$CKPT_S3"
@@ -173,6 +184,12 @@ def main(cfg: Cfg):
         model_flags = SMALL_DIT
         load_pretrained, norm_stats, batch_size = False, "task", 64
         accelerators = ["A100-80GB:1", "A100:1", "A100-40GB:1", "L40S:1"]
+    elif cfg.dit_l_scratch:
+        # DiT-L scratch with the proven small recipe (task norm_stats, --no-compile). Diagnostic:
+        # can DiT-L reach competence on-task? small (512/12/8) recipe works but is capacity-capped.
+        model_flags = DIT_L_SCRATCH
+        load_pretrained, norm_stats, batch_size = False, "task", 32
+        accelerators = ["A100-80GB:1", "A100:1", "A100-40GB:1", "L40S:1"]
     elif cfg.dit_l:
         # FT pretrained DiT-L (lbm_dit_l) on the sim task; lbm sim norm_stats; single A100-80GB.
         model_flags = DIT_L
@@ -182,7 +199,7 @@ def main(cfg: Cfg):
         # DiT-L fits ~20GB @ bs32, so use single-GPU cards that fit: L40S:1 (48GB, AWS g6e) or
         # A100:1/A100-40GB:1 (40GB, Lambda single-GPU). Same valid set the small runs ran on.
         accelerators = ["A100:1", "A100-40GB:1", "L40S:1"]
-    init = "ditl" if cfg.dit_l else ("small" if cfg.small else ("ft" if load_pretrained else "scratch"))
+    init = "ditlscratch" if cfg.dit_l_scratch else ("ditl" if cfg.dit_l else ("small" if cfg.small else ("ft" if load_pretrained else "scratch")))
     exp = cfg.exp_name or f"abc_{cfg.task}_{arm}_{init}_{ts}"
 
     # 8/4-GPU 80GB-class instances are scarce in any single AWS region; spread across
