@@ -188,8 +188,12 @@ def main(cfg: Cfg):
         # DiT-L scratch with the proven small recipe (task norm_stats, --no-compile). Diagnostic:
         # can DiT-L reach competence on-task? small (512/12/8) recipe works but is capacity-capped.
         model_flags = DIT_L_SCRATCH
-        load_pretrained, norm_stats, batch_size = False, "task", 32
-        accelerators = ["A100-80GB:1", "A100:1", "A100-40GB:1", "L40S:1"]
+        load_pretrained, norm_stats = False, "task"
+        # batch_size (per-GPU) + accelerators come from the CLI (cfg) so effective-batch sweeps
+        # are possible: effective batch = per-GPU batch x num_GPUs. e.g. --batch-size 90
+        # --accelerators A100-80GB:8  => 720 effective (matches the bottles_75k regime).
+        batch_size = cfg.batch_size
+        accelerators = cfg.accelerators
     elif cfg.dit_l:
         # FT pretrained DiT-L (lbm_dit_l) on the sim task; lbm sim norm_stats; single A100-80GB.
         model_flags = DIT_L

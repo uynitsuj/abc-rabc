@@ -93,7 +93,11 @@ def main(cfg: Cfg):
         if cfg.dry_run:
             print(f"[dry] shard {k}: seed {seed}..{seed+cfg.worlds_per_shard-1} -> {out_s3}")
             continue
-        sh(f"sky jobs launch '{ypath}' --yes --async -n {name}")
+        # --detach-run (NOT --async): synchronous per-shard submission that waits for
+        # controller registration before returning. --async fire-and-forth saturates the
+        # small (4-vCPU) jobs controller when many shards launch at once → requests jam as
+        # stuck RUNNING and never materialize. --detach-run serializes → reliable. (2026-07-02)
+        sh(f"sky jobs launch '{ypath}' --yes --detach-run -n {name}")
     total = cfg.shards * cfg.worlds_per_shard
     print(f"[OK] launched {cfg.shards} eval shards x {cfg.worlds_per_shard} worlds = {total} worlds")
     print(f"     summaries -> {S3}/evals/{label}/shard*/summary.json   (merge with merge_eval.py)")

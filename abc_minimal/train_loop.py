@@ -362,6 +362,21 @@ def main(config: TrainConfig):
 
     vision_params = list(model.img_backbone.parameters())
     vision_ids = {id(p) for p in vision_params}
+    # vision_lr_scale==0 means the DINOv3 backbone is frozen. Freezing via
+    # requires_grad=False (instead of leaving grads flowing to a lr=0 group) skips
+    # the wasted backbone backward — ~36% of step time + its activation memory
+    # (~13GB freed at bs=90) — and drops it from DDP allreduce. Numerically
+    # identical training: DiT-side grads bit-identical, backbone contributes
+    # 1.000x to the grad-clip norm. The optimizer group structure below is kept
+    # intact (AdamW skips the now grad-None group) so resume from pre-freeze
+    # checkpoints still matches. Only the vision_lr_scale>0 path (e.g. FT presets)
+    # keeps the backbone trainable.
+    if config.optim.vision_lr_scale == 0:
+        for p in vision_params:
+            p.requires_grad_(False)
+        if rank == 0:
+            print(f"DINOv3 frozen (vision_lr_scale=0): {len(vision_params)} backbone "
+                  f"params requires_grad=False — backbone backward/allreduce skipped")
     main_params = [
         p for p in model.parameters() if p.requires_grad and id(p) not in vision_ids
     ]
