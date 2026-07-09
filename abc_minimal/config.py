@@ -218,6 +218,12 @@ class SimEvalConfig:
     video_fps: int = 30
     video_every_n_actions: int = 1
     prompt: str = "sim put the plastic bottles in the bin"
+    # Prompt sent to the openpi pi0 server (policy_backend="pi0" only).
+    # None keeps the historical hardcoded training prompt (PI0_PROMPT in
+    # eval_policy.py), so existing eval commands are byte-identical. Set to
+    # override per-run, e.g. for velocity-conditioned (WARP-VC) checkpoints:
+    #   --pi0-prompt "Put the plastic bottles in the bin, speed: fast"
+    pi0_prompt: str | None = None
 
     scene: PutBottlesSimConfig = field(default_factory=PutBottlesSimConfig)
     clip: ClipConfig = field(default_factory=ClipConfig)

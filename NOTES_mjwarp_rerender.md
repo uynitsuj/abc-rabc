@@ -74,3 +74,30 @@ Goal: re-render the 2438 dataset-A episodes from mjgl -> mjwarp, package into BO
 ## Env note
 - Use `/home/justinyu/abc/.venv/bin/python` for everything. boto3 was added to the venv via
   `uv pip install` (no uv sync). NEVER `uv run` locally (triggers uv sync, can crash live procs).
+
+# 60Hz TOP-cam re-render (RM training) — 2026-07-04
+
+- **No denser-than-frame full state exists**: integration_state.npy = exactly 1 row/frame
+  (dt=0.034s const, 29.412Hz, verified ep0); sim_state.mcap /sim_state/qpos = same rate
+  (891 msgs); output.mcap ~100Hz topics are teleop leader/arm-proprio only (NO bottle poses).
+  -> 60Hz = midpoint INTERPOLATION: linear qpos dims + exact slerp(t=0.5) on quat dims
+  (free-joint rot [adr+3,adr+7) + ball joints, from MjModel jnt_type; bin + bottles are free).
+- `rerender_mjwarp.py --fps-mult 2 --cameras top --no-combined`: output = **2N-1 frames**,
+  t30[i] -> t60[2i] EXACT (originals verbatim at even indices), CFR-60 encode (same
+  x264/gop10 block, -r 60). `--cameras` uses mjwarp `cam_active` (only listed cams are
+  ray-traced; per-cam pixels identical, ~6x cheaper than all-6-cam).
+- Driver: `render_worker_node.py` (node-local mirror of render_worker.py). Output:
+  `/mnt/data/rerender60/<epidx06>/{top_camera-images-rgb.mp4,episode_metadata.json}`
+  (same epidx06 keying the package_mjwarp reduce consumes) + shared `render.log`
+  (one line/ep: idx uuid frames src sec). Resumable: skips iff final mp4 probes 2N-1 frames.
+  Interleaved sharding (idx % num_shards) -> any resharding on resume is safe.
+- Validation (eps 0+100, A100 gpu7): fps=60/1 exact, counts 1783/1131 = 2N-1 exact;
+  even-vs-30hz-scratch MAE mean 0.43-0.48 / max 0.65 (same-frame encode noise; adjacent-frame
+  baseline 0.97-1.25); odd frames strictly intermediate at motion peaks. PNG triplets in
+  /mnt/data/rerender60/_validation/. `validate_rerender60.py` re-runs all checks.
+- Fleet (198.145.127.217): 8 lanes = 2 procs x GPUs {1,3,6,7}, ~0.7GB GPU/proc, ~11 fps/lane
+  solo. Resume after node reclaim:
+  `cd ~/abc && gpus=(1 1 3 3 6 6 7 7); for k in 0 1 2 3 4 5 6 7; do PYTHONUNBUFFERED=1 \
+   nohup .venv/bin/python render_worker_node.py --shard $k --num-shards 8 --gpu-id ${gpus[$k]} \
+   > /mnt/data/rerender60/_logs/shard$k.out 2>&1 & done; disown -a`
+- 2 delivery-absent eps (idx 2264, 2344) are skipped (no scene; no 60Hz interpolation source).

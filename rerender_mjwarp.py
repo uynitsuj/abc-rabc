@@ -37,6 +37,18 @@ cameras (top, left, right) each letterboxed to 224x168 (no-op for 4:3 sim cams),
 stacked vertically, encoded with the strict x264 params + settb/setpts pts mapping
 (pts=512*k, GOP30, timebase 1/15360) the trainer's synthesized frame mapping expects.
 
+60Hz / camera-subset mode (RM training re-render; see render_worker_node.py):
+  * --cameras top          render only the listed cams (cam_active ray-traces just those;
+                           per-cam pixels identical to an all-cam render, ~Nx cheaper).
+  * --fps-mult 2           2N-1 output frames encoded CFR-60: even indices are the ORIGINAL
+                           qpos rows verbatim (t30[i] -> t60[2i] EXACT); odd indices are
+                           midpoints (linear qpos dims, exact slerp(t=0.5) for quaternion
+                           dims from MjModel jnt_type). The delivery has NO denser-than-frame
+                           full-state source (integration_state = 1 row/frame @29.4Hz;
+                           sim_state.mcap qpos is the same rate; output.mcap 100Hz topics are
+                           teleop leader/proprio only, no bottle poses), hence interpolation.
+                           Requires --no-combined (strict pts mapping is 30fps-specific).
+
 Run with the repo venv python directly (NOT `uv run`):
     .venv/bin/python rerender_mjwarp.py <delivery_root> <out_dir> --episodes ...
 """
@@ -118,6 +130,17 @@ class Config:
     width: int = RENDER_W
     """Native render resolution (default 640x480 = mjgl LeRobot video shape). The staged
     combined.mp4 is letterboxed down to 224x168 from these frames."""
+    cameras: str = ",".join(CAMERAS)
+    """Comma-separated subset of scene cameras to render + emit (e.g. "top"). Only the
+    selected cams are ray-traced (cam_active), so fewer cams = proportionally faster.
+    The staged combined.mp4 requires the full default "top,left,right" stack."""
+    fps_mult: int = 1
+    """Temporal upsampling factor. 1 = one rendered frame per integration_state row (the
+    nominal 30Hz). 2 = insert ONE midpoint frame between each consecutive row pair ->
+    output frame count = 2N-1, encoded CFR-60. Mapping: t30[i] -> t60[2*i] EXACT (original
+    qpos rows are rendered verbatim at even output indices); odd indices are midpoints
+    (linear for scalar qpos dims, exact slerp(t=0.5) for quaternion dims, which are derived
+    from MjModel jnt_type: free-joint rot + ball joints). Only 1 and 2 are supported."""
     percam_dir: Path | None = None
     """If set, ALSO write per-camera native-resolution CFR-30 mp4s
     <percam_dir>/<ep_id>/{top,left,right}_camera-images-rgb.mp4 for the LeRobot-v3 dataset
@@ -161,7 +184,8 @@ def build_scene_xml(xml_path: Path, asset_root: str) -> str:
 # MJWarp render wrapper (mirrors abc_minimal/eval_policy.py:MJWarpSim, qpos-only).
 # ----------------------------------------------------------------------------- #
 class MJWarpRenderer:
-    def __init__(self, model: mujoco.MjModel, *, height: int, width: int, gpu_id: int):
+    def __init__(self, model: mujoco.MjModel, *, height: int, width: int, gpu_id: int,
+                 cameras: tuple[str, ...] = CAMERAS):
         import mujoco_warp as mjw
         import warp as wp
 
@@ -172,22 +196,30 @@ class MJWarpRenderer:
         wp.set_device(f"cuda:{gpu_id}")
         self.m_warp = mjw.put_model(model)
         self.d_warp = mjw.put_data(model, self.data, nworld=1, nconmax=model.nconmax, njmax=model.njmax)
-        self.render_context = mjw.create_render_context(
-            mjm=model,
-            nworld=1,
-            cam_res=(width, height),
-            render_rgb=[True] * model.ncam,
-            render_depth=[False] * model.ncam,
-            use_textures=True,
-            use_shadows=True,
-        )
-        # Camera name -> id (top/left/right); fail loudly if a policy cam is missing.
+        # Camera name -> id; fail loudly if a requested cam is missing. Only the requested
+        # cams are ray-traced (cam_active): rgb_data packs the ACTIVE cams in ascending
+        # cam-id order (io.py rgb_adr layout), so per-cam pixels are identical to an
+        # all-cam render, just cheaper.
         self.cam_ids = {}
-        for name in CAMERAS:
+        for name in cameras:
             cid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
             if cid < 0:
                 raise ValueError(f"Camera not found in scene: {name!r}")
             self.cam_ids[name] = cid
+        active = sorted(self.cam_ids.values())
+        self.n_active = len(active)
+        self.cam_slot = {name: active.index(cid) for name, cid in self.cam_ids.items()}
+        cam_active = [i in set(active) for i in range(model.ncam)]
+        self.render_context = mjw.create_render_context(
+            mjm=model,
+            nworld=1,
+            cam_res=(width, height),
+            render_rgb=[True] * self.n_active,
+            render_depth=[False] * self.n_active,
+            use_textures=True,
+            use_shadows=True,
+            cam_active=cam_active,
+        )
 
     def _copy(self, target, values, dtype):
         self.wp.copy(target, self.wp.from_numpy(np.asarray(values), dtype=dtype))
@@ -200,10 +232,10 @@ class MJWarpRenderer:
         self.mjw.refit_bvh(self.m_warp, self.d_warp, self.render_context)
         self.mjw.render(self.m_warp, self.d_warp, self.render_context)
         rgba = self.render_context.rgb_data.numpy().view(np.uint8).reshape(
-            self.nworld, self.model.ncam, self.height, self.width, 4
+            self.nworld, self.n_active, self.height, self.width, 4
         )
         rgb = rgba[0, :, :, :, :3][..., ::-1]  # BGR(A) -> RGB (matches eval render())
-        return {name: rgb[cid].copy() for name, cid in self.cam_ids.items()}
+        return {name: rgb[slot].copy() for name, slot in self.cam_slot.items()}
 
     def close(self):
         try:
@@ -211,6 +243,52 @@ class MJWarpRenderer:
         except Exception:
             pass
         self.render_context = self.m_warp = self.d_warp = None
+
+
+# ----------------------------------------------------------------------------- #
+# Temporal upsampling (fps_mult=2): midpoint interpolation of qpos rows.
+# ----------------------------------------------------------------------------- #
+def quat_qpos_slices(model: mujoco.MjModel) -> list[tuple[int, int]]:
+    """qpos [start, end) slices holding unit quaternions, from MjModel joint types.
+
+    Free joints (the bottles + bin: 3 pos + 4 quat) contribute [adr+3, adr+7);
+    ball joints contribute [adr, adr+4). All other qpos dims (hinge/slide arm joints,
+    free-joint translations) are plain scalars -> linear interpolation.
+    """
+    out: list[tuple[int, int]] = []
+    for j in range(model.njnt):
+        t, adr = int(model.jnt_type[j]), int(model.jnt_qposadr[j])
+        if t == int(mujoco.mjtJoint.mjJNT_FREE):
+            out.append((adr + 3, adr + 7))
+        elif t == int(mujoco.mjtJoint.mjJNT_BALL):
+            out.append((adr, adr + 4))
+    return out
+
+
+def upsample_qpos_2x(qpos: np.ndarray, quat_slices: list[tuple[int, int]]) -> np.ndarray:
+    """(N, nq) -> (2N-1, nq): even rows = ORIGINAL rows verbatim (t30[i] -> t60[2i] EXACT);
+    odd rows = midpoints between consecutive originals.
+
+    Scalar dims: linear midpoint. Quaternion dims: exact slerp at t=0.5 — after sign-aligning
+    q1 to q0 (shortest arc), the great-circle midpoint equals the normalized chord midpoint
+    (q0+q1)/||q0+q1||. Antipodal pairs (undefined midpoint; never occurs between adjacent
+    34ms sim frames) fall back to q0.
+    """
+    n = len(qpos)
+    if n == 1:
+        return qpos.copy()
+    out = np.empty((2 * n - 1, qpos.shape[1]), dtype=qpos.dtype)
+    out[0::2] = qpos
+    mid = 0.5 * (qpos[:-1] + qpos[1:])
+    for s, e in quat_slices:
+        q0, q1 = qpos[:-1, s:e], qpos[1:, s:e]
+        dot = np.sum(q0 * q1, axis=1, keepdims=True)
+        q1 = np.where(dot < 0.0, -q1, q1)  # shortest arc
+        m = q0 + q1
+        norm = np.linalg.norm(m, axis=1, keepdims=True)
+        mid[:, s:e] = np.where(norm < 1e-8, q0, m / np.maximum(norm, 1e-8))
+    out[1::2] = mid
+    return out
 
 
 # ----------------------------------------------------------------------------- #
@@ -234,17 +312,18 @@ def encode_percam(frames_hwc: np.ndarray, out_path: str) -> None:
             raise RuntimeError(f"per-cam encode failed: {out_path}")
 
 
-def encode_lerobot_percam(frames_hwc: np.ndarray, out_path: str) -> None:
-    """Native-resolution CFR-30 x264 encode for a LeRobot per-cam video (NO letterbox).
+def encode_lerobot_percam(frames_hwc: np.ndarray, out_path: str, fps: int = FPS) -> None:
+    """Native-resolution CFR x264 encode for a LeRobot per-cam video (NO letterbox).
 
-    Mirrors the mjgl dataset's info.json (libx264/yuv420p/gop10). One encode per camera per
+    Mirrors the mjgl dataset's info.json (libx264/yuv420p/gop10). Default fps=30 (CFR-30);
+    fps=60 gives the same encode at CFR-60 for fps_mult=2 output. One encode per camera per
     episode; the downstream reduce concatenates these in episode_index order into the
     per-file-group videos, so frame count MUST equal the episode length exactly.
     """
     n, h, w, _ = frames_hwc.shape
     enc = subprocess.Popen(
         ["ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}",
-         "-r", str(FPS), "-i", "-", "-vsync", "0", *X264_LEROBOT, "-threads", "1", out_path],
+         "-r", str(fps), "-i", "-", "-vsync", "0", *X264_LEROBOT, "-threads", "1", out_path],
         stdin=subprocess.PIPE, stderr=subprocess.DEVNULL,
     )
     try:
@@ -287,17 +366,29 @@ def render_episode(ep_dir: Path, cfg: Config) -> str:
     out_ep = cfg.out_dir / ep_id
     combined = out_ep / "combined_camera-images-rgb.mp4"
 
+    cams = tuple(c.strip() for c in cfg.cameras.split(",") if c.strip())
+    if cfg.fps_mult not in (1, 2):
+        raise ValueError(f"fps_mult must be 1 or 2, got {cfg.fps_mult}")
+    want_combined = not cfg.no_combined
+    if want_combined and (cams != CAMERAS or cfg.fps_mult != 1):
+        raise ValueError("staged combined.mp4 requires cameras=top,left,right and fps_mult=1 "
+                         "(strict pts mapping is 30fps-specific); pass --no-combined")
+
     integration_state = np.load(ep_dir / "integration_state.npy")  # (T, >=1+nq); col0=time
     xml = build_scene_xml(ep_dir / "scene_assembled.xml", cfg.asset_root)
     model = mujoco.MjModel.from_xml_string(xml)
     model.opt.timestep = 0.002  # match eval; irrelevant for qpos-only render but harmless
     nq = model.nq
     qpos_all = integration_state[:, 1:1 + nq]  # col0 = sim-time, then qpos (verified)
+    n_src = len(qpos_all)
+    if cfg.fps_mult == 2:
+        # 2N-1 output rows: even = originals verbatim, odd = interpolated midpoints.
+        qpos_all = upsample_qpos_2x(qpos_all, quat_qpos_slices(model))
     n_frames = len(qpos_all)
+    fps_out = FPS * cfg.fps_mult
 
-    want_combined = not cfg.no_combined
     percam_ep = (cfg.percam_dir / ep_id) if cfg.percam_dir is not None else None
-    percam_out = {c: percam_ep / f"{CAM_KEY[c]}.mp4" for c in CAMERAS} if percam_ep else {}
+    percam_out = {c: percam_ep / f"{CAM_KEY[c]}.mp4" for c in cams} if percam_ep else {}
 
     # Skip if every requested output already exists with the right frame count.
     if not cfg.overwrite:
@@ -313,12 +404,13 @@ def render_episode(ep_dir: Path, cfg: Config) -> str:
         percam_ep.mkdir(parents=True, exist_ok=True)
 
     t0 = time.time()
-    renderer = MJWarpRenderer(model, height=cfg.height, width=cfg.width, gpu_id=cfg.gpu_id)
+    renderer = MJWarpRenderer(model, height=cfg.height, width=cfg.width, gpu_id=cfg.gpu_id,
+                              cameras=cams)
     try:
-        frames = {c: np.empty((n_frames, cfg.height, cfg.width, 3), np.uint8) for c in CAMERAS}
+        frames = {c: np.empty((n_frames, cfg.height, cfg.width, 3), np.uint8) for c in cams}
         for k in range(n_frames):
             imgs = renderer.render_qpos(qpos_all[k])
-            for c in CAMERAS:
+            for c in cams:
                 frames[c][k] = imgs[c]
     finally:
         renderer.close()
@@ -327,8 +419,8 @@ def render_episode(ep_dir: Path, cfg: Config) -> str:
     # Per-camera native-resolution LeRobot videos (no letterbox). Emitted from the SAME
     # rendered frames as the staged combined below, so the two formats are pixel-consistent.
     if percam_ep is not None:
-        for c in CAMERAS:
-            encode_lerobot_percam(frames[c], str(percam_out[c]))
+        for c in cams:
+            encode_lerobot_percam(frames[c], str(percam_out[c]), fps=fps_out)
             got = probe_nframes(str(percam_out[c]))
             if got != n_frames:  # hard-assert: a per-episode miscount corrupts the group concat
                 raise RuntimeError(f"{ep_id}: percam {c} has {got} frames, expected {n_frames}")
@@ -363,22 +455,27 @@ def render_episode(ep_dir: Path, cfg: Config) -> str:
                 (out_ep / f.name).write_bytes(f.read_bytes())
                 copied.append(f.name)
 
-    # Staged episode_metadata.json (combined.mp4 is 224x168 per cam, matching lerobot_to_abc).
-    if want_combined or cfg.staged_src is not None:
-        meta = {
-            "task_name": cfg.task_name,
-            "cameras": list(CAMERAS),
-            "camera_resolutions": {c: [OUT_W, OUT_H] for c in CAMERAS},
-            "alignment": "mjwarp_rerender_integration_state_1to1",
-            "num_steps": n_frames,
-            "source_episode_id": ep_id.replace("episode_", ""),
-            "renderer": "mjwarp",
-            "asset_root": cfg.asset_root,
-        }
-        (out_ep / "episode_metadata.json").write_text(json.dumps(meta, indent=2))
+    # episode_metadata.json (combined.mp4 is 224x168 per cam, matching lerobot_to_abc;
+    # percam-only runs record the native render resolution instead).
+    res = [OUT_W, OUT_H] if want_combined else [cfg.width, cfg.height]
+    meta = {
+        "task_name": cfg.task_name,
+        "cameras": list(cams),
+        "camera_resolutions": {c: res for c in cams},
+        "alignment": ("mjwarp_rerender_integration_state_1to1" if cfg.fps_mult == 1 else
+                      "mjwarp_rerender_integration_state_2x_midpoint_t30i_eq_t60_2i"),
+        "num_steps": n_frames,
+        "num_src_steps": n_src,
+        "fps": fps_out,
+        "fps_mult": cfg.fps_mult,
+        "source_episode_id": ep_id.replace("episode_", ""),
+        "renderer": "mjwarp",
+        "asset_root": cfg.asset_root,
+    }
+    (out_ep / "episode_metadata.json").write_text(json.dumps(meta, indent=2))
     pc_note = f" +percam@{cfg.width}x{cfg.height}" if percam_ep is not None else ""
-    print(f"[OK] {ep_id}: {n_frames} frames, render={render_s:.1f}s "
-          f"({n_frames / render_s:.1f} fps){pc_note}, copied={copied}")
+    print(f"[OK] {ep_id}: {n_frames} frames ({n_src} src x{cfg.fps_mult}, {fps_out}fps), "
+          f"render={render_s:.1f}s ({n_frames / render_s:.1f} fps){pc_note}, copied={copied}")
     return ep_id
 
 

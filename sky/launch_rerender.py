@@ -38,6 +38,11 @@ class Cfg:
     start: int = 0                 # inclusive episode_index (default: whole dataset)
     end: int = TOTAL_EPISODES      # exclusive
     label: str = "full"
+    # Manifest to render. Default = A's (episode_index 0..2437). For the B-only corpus
+    # expansion pass render_manifest_B.json's S3 URI (global indices 2438..5990) + the
+    # matching --start/--end; outputs land in the SAME scratch prefix keyed by those
+    # (non-overlapping) global indices, so package_B.py reads percam/<global06>/.
+    manifest_s3: str = MANIFEST_S3
     overwrite: bool = False
     # Single-world mjwarp render is light on VRAM/compute; any modern single GPU works.
     accelerators: List[str] = field(default_factory=lambda: [
@@ -94,7 +99,7 @@ def main(cfg: Cfg):
             "workdir": ABC_ROOT, "num_nodes": 1,
             "envs": {
                 "SHARD_START": str(s), "SHARD_END": str(e),
-                "MANIFEST_S3": MANIFEST_S3, "SCRATCH_S3": SCRATCH_S3, "ASSETS_S3": ASSETS_S3,
+                "MANIFEST_S3": cfg.manifest_s3, "SCRATCH_S3": SCRATCH_S3, "ASSETS_S3": ASSETS_S3,
                 "OVERWRITE_FLAG": ("--overwrite" if cfg.overwrite else ""),
             },
             "resources": {"any_of": candidates}, "setup": SETUP, "run": RUN,
@@ -106,7 +111,7 @@ def main(cfg: Cfg):
         if cfg.dry_run:
             print(f"[dry] shard {k}: episode_index [{s},{e}) -> {name}")
             continue
-        sh(f"sky jobs launch '{ypath}' --yes --async -n {name}")
+        sh(f"sky launch '{ypath}' -y -d --down -c {name}")
         launched += 1
     print(f"[OK] launched {launched} shards over episode_index [{cfg.start},{cfg.end}); "
           f"outputs -> {SCRATCH_S3}/{{percam,staged}}/<epidx06>/  (reduce with package_mjwarp.py)")

@@ -160,6 +160,15 @@ def scene_xml(scene: PutBottlesSimConfig, bottle_scales: np.ndarray, bin_scale: 
 
 
 class PutBottlesEvaluator:
+    # Hardened scoring: a bottle counts as PLACED only after being continuously
+    # in-bin for PERSIST_STEPS consecutive evaluate() calls (0.5 s at 30 Hz) —
+    # single-frame flickers (spawn bounces, gripper swing-throughs) never
+    # qualify. The first GRACE_STEPS are ignored entirely (spawn settling).
+    # Per-bottle entry/exit events are recorded so any future re-scoring is a
+    # replay of stored events, not a re-run.
+    PERSIST_STEPS = 15
+    GRACE_STEPS = 30
+
     def __init__(self, model: mujoco.MjModel, scene: PutBottlesSimConfig):
         self.model = model
         self.scene = scene
@@ -167,10 +176,22 @@ class PutBottlesEvaluator:
         self.bin_qpos_adr = self._joint_qpos_adr("bin_joint")
         self.max_bottles = 0
         self.ever_success = False
+        self._step = 0
+        self._streak = np.zeros(len(self.bottle_names), dtype=np.int32)
+        self._placed_ever = np.zeros(len(self.bottle_names), dtype=bool)
+        self._placed_step = {}          # bottle idx -> step of qualifying window START
+        self.inbin_events = []          # (step, bottle_name, "enter"|"exit") raw, ungated
+        self._prev_inbin = np.zeros(len(self.bottle_names), dtype=bool)
 
     def reset(self) -> None:
         self.max_bottles = 0
         self.ever_success = False
+        self._step = 0
+        self._streak[:] = 0
+        self._placed_ever[:] = False
+        self._placed_step = {}
+        self.inbin_events = []
+        self._prev_inbin[:] = False
 
     def _joint_qpos_adr(self, name: str) -> int:
         joint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
@@ -191,6 +212,8 @@ class PutBottlesEvaluator:
 
     def evaluate(self, qpos: np.ndarray) -> dict[str, Any]:
         qpos = np.asarray(qpos, dtype=np.float32)
+        # stash for the caller's state-trace recorder (already fetched — free)
+        self.last_qpos = qpos
         bin_pos = qpos[self.bin_qpos_adr : self.bin_qpos_adr + 3]
         bottle_pos = np.stack([qpos[adr : adr + 3] for adr in self.bottle_qpos_addrs])
         rel = bottle_pos - bin_pos[None]
@@ -201,16 +224,36 @@ class PutBottlesEvaluator:
         in_bin = (radial_margin >= 0.0) & (lower_height_margin >= 0.0) & (upper_height_margin >= 0.0)
         num = int(in_bin.sum())
         active = len(self.bottle_names)
-        self.max_bottles = max(self.max_bottles, num)
-        success = num == active
+        # raw entry/exit events (ungated) for offline re-scoring
+        for i in np.flatnonzero(in_bin != self._prev_inbin):
+            self.inbin_events.append(
+                (self._step, self.bottle_names[i], "enter" if in_bin[i] else "exit")
+            )
+        self._prev_inbin = in_bin.copy()
+        # hardened placement: persistence + spawn grace
+        if self._step >= self.GRACE_STEPS:
+            self._streak = np.where(in_bin, self._streak + 1, 0)
+            newly = (self._streak >= self.PERSIST_STEPS) & ~self._placed_ever
+            for i in np.flatnonzero(newly):
+                self._placed_ever[i] = True
+                self._placed_step[int(i)] = self._step - self.PERSIST_STEPS + 1
+        else:
+            self._streak[:] = 0
+        self._step += 1
+        placed = int(self._placed_ever.sum())
+        self.max_bottles = max(self.max_bottles, placed)
+        success = placed == active
         self.ever_success = self.ever_success or success
         return {
-            "reward": float(num / max(active, 1)),
-            "success": bool(success),
+            "reward": float(placed / max(active, 1)),
+            "success": bool(num == active),
             "ever_success": bool(self.ever_success),
             "num_bottles_in_bin": num,
             "num_active_bottles": active,
             "max_bottles_in_bin_so_far": int(self.max_bottles),
+            "placed_ever": placed,
+            "final_standing": num,
+            "placed_steps_per_bottle": {self.bottle_names[k]: int(v) for k, v in self._placed_step.items()},
             "bottle_in_bin_mask": [bool(x) for x in in_bin.tolist()],
             "bottles_in_bin": [name for name, ok in zip(self.bottle_names, in_bin) if bool(ok)],
             "bottle_names": list(self.bottle_names),
@@ -228,6 +271,19 @@ class Randomization:
     bin_state: dict[str, list[float]]
     bottle_scales: list[float]
     bin_scale: float
+
+
+def _save_qpos_trace(
+    out_dir: Path, world_index: int, seed: int, trace: list[np.ndarray]
+) -> str | None:
+    """Persist the per-step qpos trace (fp16 npz). With the world's stored
+    randomization (scales -> scene_xml) this makes every rollout offline
+    re-renderable and re-scorable without re-running the policy."""
+    if not trace:
+        return None
+    path = out_dir / f"qpos_trace_{world_index:03d}_s{seed}.npz"
+    np.savez_compressed(path, qpos=np.stack(trace))
+    return str(path)
 
 
 def require_mjwarp() -> None:
@@ -920,7 +976,11 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
     device = resolve_device(config.device)
     if pi0_mode:
         ckpt_path = f"pi0://{config.pi0_host}:{config.pi0_port}"
-        policy = Pi0Policy(config.pi0_host, config.pi0_port)
+        policy = Pi0Policy(
+            config.pi0_host,
+            config.pi0_port,
+            prompt=config.pi0_prompt if config.pi0_prompt is not None else PI0_PROMPT,
+        )
     else:
         if config.checkpoint is None:
             raise ValueError("policy_backend='dit' requires --checkpoint")
@@ -975,6 +1035,12 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
             final_eval = env.evaluate_vanilla() if config.vanilla_physics else env.evaluate()
             steps = 0
             chunk_metrics = []
+            # per-step placement timestamps (step index when the k-th bottle first
+            # registers in-bin; eval_fn already runs every step, so this is free and
+            # gives 1/30 s resolution vs the 1-chunk resolution of chunk_metrics)
+            placement_steps: list[int] = []
+            # full qpos trace (fp16) -> offline re-render / re-score of the EXACT rollout
+            qpos_trace: list[np.ndarray] = []
             rtc = None
             try:
                 obs_fn = env.obs_vanilla_state if config.vanilla_physics else env.obs
@@ -1028,6 +1094,9 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
                         step_fn(action)
                         final_eval = eval_fn()
                         steps += 1
+                        qpos_trace.append(env.evaluator.last_qpos.astype(np.float16))
+                        while len(placement_steps) < int(final_eval["max_bottles_in_bin_so_far"]):
+                            placement_steps.append(steps)
                         if video is not None and steps % config.video_every_n_actions == 0:
                             video.append_data(video_frame(render_fn(), config.model.camera_keys))
                         if final_eval["ever_success"]:
@@ -1091,6 +1160,16 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
                 "reward": float(final_eval["reward"]),
                 "steps": steps,
                 "wall_s": time.perf_counter() - t0,
+                "placement_steps": placement_steps,
+                "placement_times_s": [round(s / 30.0, 4) for s in placement_steps],
+                "inbin_events": [
+                    [int(st), nm, ev] for st, nm, ev in env.evaluator.inbin_events
+                ],
+                "scorer": {
+                    "persist_steps": PutBottlesEvaluator.PERSIST_STEPS,
+                    "grace_steps": PutBottlesEvaluator.GRACE_STEPS,
+                },
+                "qpos_trace_path": _save_qpos_trace(out_dir, world_index, seed, qpos_trace),
                 "chunk_metrics": chunk_metrics,
                 "randomization": env.randomization,
                 "final_task_eval": final_eval,
