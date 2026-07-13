@@ -1099,10 +1099,10 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
                             placement_steps.append(steps)
                         if video is not None and steps % config.video_every_n_actions == 0:
                             video.append_data(video_frame(render_fn(), config.model.camera_keys))
-                        if final_eval["ever_success"]:
+                        if config.early_stop and final_eval["ever_success"]:
                             break
                     steps_s = time.perf_counter() - t_steps
-                    if final_eval["ever_success"]:
+                    if config.early_stop and final_eval["ever_success"]:
                         break
                     if rtc is None and chunk + 1 < config.num_chunks:
                         t_obs = time.perf_counter()

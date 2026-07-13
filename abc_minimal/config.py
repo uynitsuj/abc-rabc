@@ -214,6 +214,12 @@ class SimEvalConfig:
     rtc_prefix_length: int = 4
     rtc_inference_lead_steps: int = 4
     log_every_chunk: bool = False
+    # When True (default, back-compat) an episode halts the instant all bottles
+    # are placed-ever ("ever_success"). Set False to run the full num_chunks
+    # horizon every episode — needed for offline re-scoring under a different
+    # in-bin primitive, since early-stop truncates the qpos trace at the moment
+    # the CURRENT primitive first reads 6/6 (and truncates the faster arm more).
+    early_stop: bool = True
     save_video: bool = False
     video_fps: int = 30
     video_every_n_actions: int = 1
