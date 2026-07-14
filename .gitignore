@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+.uv/
+cache/
+uv.lock
+checkpoints/
+outputs/
+cache_repro/
+repro_rabc.py
+staged_put/
+scored_sss15/
+scored_sss30/
+*_ckpts/*
+local_eval_out/*
+*trace_videos/*
