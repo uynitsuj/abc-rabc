@@ -1,0 +1,73 @@
+# The 6-environment sim eval suite.
+#
+# Prompts below match the training prompts used in scripts/sweep_pi0_evals.sh.
+# IMPORTANT: the prompt sent to a policy must match what its checkpoint was
+# trained on, or success will be artificially low. Verify each against your
+# checkpoint's training config and adjust if needed (turn_mug in particular is
+# a best-guess capitalization — confirm it).
+#
+# Scoring coverage:
+#   - throw_bottles -> bottles_in_bin evaluator  (success rate reported)
+#   - sweep         -> sweep_away evaluator      (success rate reported)
+#   - put_bottles, hang_mug, load_plates, turn_mug -> NO evaluator yet
+#     (rolled out + recorded to video, success reported as null)
+#
+# Run (run_sim_eval.sh wires servers + this command automatically):
+#   python -m yam_sim.examples.run_eval \
+#       --config yam_sim/eval/configs/sim_suite.yaml \
+#       --models base=0.0.0.0:8000 --output-dir /tmp/yam_eval_suite
+
+output_dir: /tmp/yam_eval_suite
+
+tasks:
+  # --- scored ---
+  - task: throw_plastic_bottles_in_bin
+    prompt: "Throw the plastic bottles in the bin"
+    episodes: 20
+    num_worlds: 5
+    max_seconds: 138        # 2 x 68.8s (longest demo)
+  - task: sweep_away_paper_scraps_from_table
+    prompt: "Sweep away paper scraps from the table"
+    episodes: 20
+    num_worlds: 5
+    max_seconds: 200        # 2 x 99.7s (longest demo)
+
+  # --- video-only (no evaluator; success = null) ---
+  - task: put_bottles                       # bare scene name, no registered spec
+    prompt: "Put the plastic bottles in the bin"
+    episodes: 10
+    num_worlds: 5
+    max_seconds: 128        # 2 x 63.6s (longest demo)
+  - task: hang_mug_on_mug_rack
+    prompt: "Hang the mug on the mug rack"
+    episodes: 10
+    num_worlds: 5
+    max_seconds: 183        # 2 x 91.5s (longest demo)
+  - task: load_plates_into_dish_rack
+    prompt: "Load the plates into the dish rack"
+    episodes: 10
+    num_worlds: 5
+    max_seconds: 262        # 2 x 130.8s (longest demo)
+  - task: turn_mug_right_side_up
+    prompt: "Turn the mug right side up"     # confirm against training prompt
+    episodes: 10
+    num_worlds: 5
+    max_seconds: 130        # 2 x 64.8s (longest demo)
+
+# Global rollout defaults (per-task fields above override these).
+#
+# Execution matches the realtime `sync` deployment (robots_realtime
+# AsyncDiffusionAgent + openpi ActionChunkBroker): predict a 30-step (1s @ 30Hz)
+# chunk, execute the first `execute_chunk_dim` steps sequentially with no prefix
+# and no blend (hard chunk swap), then re-infer. `execute_chunk_dim` here is the
+# deployment's `action_horizon` (20).
+episodes_default: 10
+num_worlds_default: 5
+scene: hybrid
+execute_chunk_dim: 20        # = deployment action_horizon (sync mode)
+prefix_length: 3             # ignored when use_ttrtc is false
+use_ttrtc: false             # hard chunk swap, no time-travel prefix (matches sync deploy)
+jpeg_quality: 0
+fps: 30
+video: true
+seed_base: 0

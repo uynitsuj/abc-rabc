@@ -1,0 +1,21 @@
+# Single-task deep eval: throw plastic bottles in bin (scored by bottles_in_bin).
+#
+#   python -m yam_sim.examples.run_eval \
+#       --config yam_sim/eval/configs/bottles.yaml \
+#       --models mymodel=0.0.0.0:8000
+
+output_dir: /tmp/yam_eval
+
+tasks:
+  - task: bottles
+    episodes: 50
+    num_worlds: 10
+    max_chunks: 16
+
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+fps: 30
+video: true
+seed_base: 0

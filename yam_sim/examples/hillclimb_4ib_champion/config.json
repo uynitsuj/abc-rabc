@@ -1,0 +1,75 @@
+{
+  "seed": 6,
+  "scene": "hybrid",
+  "num_chunks": 250,
+  "execute_dim": 15,
+  "bottle_mass": 0.015,
+  "bottle_alpha": 0.7,
+  "all_green_bottles": true,
+  "prompt": "throw plastic bottles in bin",
+  "actions_shape": [
+    3750,
+    14
+  ],
+  "bottles_in_bin": [
+    "bottle_1",
+    "bottle_2",
+    "bottle_3",
+    "bottle_4",
+    "bottle_5",
+    "bottle_6"
+  ],
+  "num_bottles_in_bin": 6,
+  "description": "6-IB success rollout from C36 champion config (250c exec15 alpha=0.7 all-green compound). Checkpoint: far-wandb/FAR-abc/far-abc-XGYkwlRVLgwVCKSU-last:v200.",
+  "randomize_bottles": true,
+  "match_training_resolution": true,
+  "compound_effects": {
+    "camera_noise": 3.0,
+    "gaussian_blur": 3,
+    "no_shadows": true
+  },
+  "initial_bottle_positions": [
+    [
+      0.5963687369173496,
+      -0.22915168713737505,
+      0.78
+    ],
+    [
+      0.38229700398079036,
+      0.04752603210312012,
+      0.78
+    ],
+    [
+      0.45062235478199875,
+      0.06125971609804509,
+      0.78
+    ],
+    [
+      0.5436065287686782,
+      0.2451121356867082,
+      0.78
+    ],
+    [
+      0.36634235234670637,
+      0.10931861828209716,
+      0.78
+    ],
+    [
+      0.3874472523141829,
+      0.2288236477348342,
+      0.78
+    ]
+  ],
+  "initial_bin_position": [
+    0.7,
+    0.0,
+    0.76
+  ],
+  "checkpoint": "far-wandb/FAR-abc/far-abc-XGYkwlRVLgwVCKSU-last:v200",
+  "results": {
+    "4ib_rate": 0.68,
+    "5ib_rate": 0.48,
+    "6ib_rate": 0.24,
+    "n_seeds": 25
+  }
+}

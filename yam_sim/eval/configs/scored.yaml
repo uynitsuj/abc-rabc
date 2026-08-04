@@ -1,0 +1,35 @@
+# Scored sim-eval task set: the tasks that currently have automated evaluators.
+#
+# Only `bottles` (bottles_in_bin) and `sweep` (sweep_away) compute success/reward
+# today; these are the tasks where the harness reports real success rates.
+#
+# `models:` is intentionally omitted — pass checkpoints on the CLI:
+#   python -m yam_sim.examples.run_eval \
+#       --config yam_sim/eval/configs/scored.yaml \
+#       --models base=0.0.0.0:8000,finetuned=0.0.0.0:8001 \
+#       --output-dir /tmp/yam_eval
+# (run_sim_eval.sh wires the servers + this command together automatically.)
+
+output_dir: /tmp/yam_eval
+
+tasks:
+  - task: bottles
+    episodes: 20
+    num_worlds: 5
+    max_chunks: 16     # ~11 s sim per episode at execute_chunk_dim=20
+  - task: sweep
+    episodes: 20
+    num_worlds: 5
+    max_chunks: 20     # sweeping is longer-horizon (~14 s)
+
+# Global rollout defaults (per-task fields above override these).
+episodes_default: 20
+num_worlds_default: 5
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+jpeg_quality: 0
+fps: 30
+video: true
+seed_base: 0

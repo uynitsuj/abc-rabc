@@ -1,0 +1,60 @@
+{
+  "seed": 56,
+  "scene": "training",
+  "num_chunks": 74,
+  "num_chunks_full": 135,
+  "diffusion_steps": 5,
+  "jpeg_quality": 75,
+  "execute_dim": 30,
+  "bottle_mass": 0.015,
+  "bottle_alpha": 0.7,
+  "all_green_bottles": true,
+  "prompt": "throw plastic bottles in bin",
+  "ttrtc": true,
+  "ttrtc_prefix_length": 3,
+  "init_q": [
+    -0.20656901597976685,
+    0.4728389382362366,
+    0.994316041469574,
+    -0.7043945789337158,
+    -0.3084229826927185,
+    -0.3286411762237549,
+    0.9987506866455078,
+    0.20160982012748718,
+    0.3900587558746338,
+    1.1182955503463745,
+    -0.8726252913475037,
+    0.1333257108926773,
+    0.42629891633987427,
+    0.9895316958427429
+  ],
+  "actions_shape": [
+    2220,
+    14
+  ],
+  "actions_full_shape": [
+    4050,
+    14
+  ],
+  "bottles_in_bin": [
+    "bottle_2",
+    "bottle_4"
+  ],
+  "bottles_in_bin_full": [
+    "bottle_2",
+    "bottle_3",
+    "bottle_4"
+  ],
+  "num_bottles_in_bin": 2,
+  "num_bottles_in_bin_full": 3,
+  "description": "Ki14 LBM policy rollout achieving 2-IB (bottles 2 & 4 deposited in bin). Truncated at step 2220 (74 chunks) for a short demo. Full episode (135 chunks, 3-IB with bottle 3 also deposited) available in actions_full.npy.",
+  "wandb_run": "far-wandb/FAR-abc/runs/Ki14n2m8",
+  "capture_gpu": "H200 (GPU 0)",
+  "first_2ib_step": 2014,
+  "truncation_step": 2220,
+  "highlight": {
+    "trim_start_s": 55.0,
+    "trim_end_s": 75.5,
+    "description": "3s before first bottle enters bin through 3s after last"
+  }
+}

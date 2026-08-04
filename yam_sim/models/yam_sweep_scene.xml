@@ -1,0 +1,678 @@
+<mujoco model="yam_sweep">
+  <compiler angle="radian" meshdir="assets" texturedir="assets"/>
+  <option integrator="implicitfast"/>
+
+  <visual>
+    <global azimuth="120" elevation="-20" offwidth="1920" offheight="1080"/>
+    <quality shadowsize="8192" offsamples="16"/>
+    <headlight ambient="0.40 0.40 0.40" diffuse="0.0 0.0 0.0" specular="0 0 0"/>
+    <rgba haze="1.0 1.0 1.0 1"/>
+  </visual>
+
+  <default>
+    <default class="yam">
+      <position inheritrange="1"/>
+      <joint frictionloss="0.1" axis="0 0 1"/>
+      <default class="dm4340">
+        <joint armature="0.032"/>
+        <position kp="40" kv="2.5" forcerange="-28 28"/>
+      </default>
+      <default class="dm4310">
+        <joint armature="0.0018"/>
+        <position kp="10" kv="1" forcerange="-10 10"/>
+      </default>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" density="0" group="2" material="black"/>
+      </default>
+      <default class="collision">
+        <geom group="3" type="capsule" friction="2.0 0.1 0.01" condim="6"/>
+        <default class="sphere_collision">
+          <geom size="0.0006 0 0" type="sphere" rgba="1 0 0 1" friction="4.0 0.1 0.01" condim="6" solimp="0.998 0.998 0.001" solref="0.004 1" priority="2"/>
+        </default>
+      </default>
+      <default class="finger">
+        <joint type="slide" armature="0.1" frictionloss="0.1"/>
+        <position ctrlrange="0.0 0.0495" kp="400" kv="14" inheritrange="0"/>
+      </default>
+    </default>
+    <default class="sweep_tool">
+      <geom type="mesh" contype="0" conaffinity="0" density="0" group="2"/>
+    </default>
+    <default class="sweep_tool_col">
+      <geom type="mesh" condim="6" friction="3.0 0.1 0.01" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" group="3" density="0" rgba="0.95 0.55 0.15 0.55"/>
+    </default>
+    <default class="sweep_pan_col">
+      <geom type="mesh" condim="3" friction="0.6 0.01 0.002" solref="0.004 1" solimp="0.998 0.998 0.001" group="3" density="0" rgba="0.1 0.4 1 0.45"/>
+    </default>
+    <default class="dustpan_pan_col">
+      <geom type="mesh" condim="3" friction="0.9 0.015 0.003" solref="0.004 1" solimp="0.998 0.998 0.001" group="3" density="0" rgba="0.2 0.75 0.45 0.45"/>
+    </default>
+    <default class="trash_paper_vis">
+      <geom type="mesh" contype="0" conaffinity="0" density="0" group="2"/>
+    </default>
+    <default class="trash_paper_col">
+      <geom type="mesh" condim="3" friction="0.15 0.003 0.0005" solref="0.006 1" solimp="0.998 0.998 0.001" group="3" density="100" rgba="0.95 0.25 0.25 0.5"/>
+    </default>
+  </default>
+
+  <asset>
+    <material name="black" rgba="0.30 0.30 0.30 1"/>
+    <material name="white" rgba="0.9 0.9 0.9 1"/>
+
+    <!-- Garbage can meshes (scale 0.48 for ~17cm x 20cm) -->
+    <texture name="garbage_can_tex" type="2d" file="garbage_can/material_0.png"/>
+    <material name="garbage_can_mat" rgba="0.1 0.1 0.25 1" specular="0.3" shininess="0.2"/>
+    <mesh name="garbage_can_vis" file="garbage_can/garbage_can.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="garbage_can_inner" file="garbage_can/garbage_can_inner.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col0" file="garbage_can/garbage_can_collision_0.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col1" file="garbage_can/garbage_can_collision_1.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col2" file="garbage_can/garbage_can_collision_2.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col3" file="garbage_can/garbage_can_collision_3.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col4" file="garbage_can/garbage_can_collision_4.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col5" file="garbage_can/garbage_can_collision_5.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col6" file="garbage_can/garbage_can_collision_6.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col7" file="garbage_can/garbage_can_collision_7.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col8" file="garbage_can/garbage_can_collision_8.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col9" file="garbage_can/garbage_can_collision_9.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col10" file="garbage_can/garbage_can_collision_10.obj" scale="0.48 0.48 0.48"/>
+    <mesh name="gc_col11" file="garbage_can/garbage_can_collision_11.obj" scale="0.48 0.48 0.48"/>
+
+    <!-- Brush flat meshes (split handle + bristles, scale to ~21cm) -->
+    <material name="brush_handle_mat" rgba="0.523 0.311 0.200 1" specular="0.5" shininess="0.25"/>
+    <texture name="bristle_tex" type="2d" file="brush_flat/bristles.png"/>
+    <material name="brush_bristle_mat" texture="bristle_tex" specular="0.2" shininess="0.05"/>
+    <mesh name="brush_handle" file="brush_flat/brush_material.obj" scale="0.084 0.042 0.042"/>
+    <mesh name="brush_bristles" file="brush_flat/brush_material_003.obj" scale="0.084 0.042 0.042"/>
+    <mesh name="brush_col0" file="brush_flat/brush_flat_collision_0.obj" scale="0.084 0.042 0.042"/>
+    <mesh name="brush_col1" file="brush_flat/brush_flat_collision_1.obj" scale="0.084 0.042 0.042"/>
+
+    <!-- Dustpan meshes (scale 0.01 — source is in cm) -->
+    <texture name="dustpan_tex" type="2d" file="dustpan/tex.png"/>
+    <material name="dustpan_mat" texture="dustpan_tex" specular="0.5" shininess="0.5"/>
+    <mesh name="dustpan_vis" file="dustpan/dustpan_0.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col0" file="dustpan/dustpan_collision_0.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col1" file="dustpan/dustpan_collision_1.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col2" file="dustpan/dustpan_collision_2.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col3" file="dustpan/dustpan_collision_3.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col4" file="dustpan/dustpan_collision_4.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col5" file="dustpan/dustpan_collision_5.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col6" file="dustpan/dustpan_collision_6.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col7" file="dustpan/dustpan_collision_7.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col8" file="dustpan/dustpan_collision_8.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col9" file="dustpan/dustpan_collision_9.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col10" file="dustpan/dustpan_collision_10.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col11" file="dustpan/dustpan_collision_11.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col12" file="dustpan/dustpan_collision_12.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col13" file="dustpan/dustpan_collision_13.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col14" file="dustpan/dustpan_collision_14.obj" scale="0.099 0.099 0.099"/>
+    <mesh name="dustpan_col15" file="dustpan/dustpan_collision_15.obj" scale="0.099 0.099 0.099"/>
+
+    <!-- Paper-ball debris meshes (scale 0.016 for ~4 cm scraps) -->
+    <material name="trash_1_mat" rgba="0.30 0.30 0.30 1" specular="0.02" shininess="0.02"/>
+    <material name="trash_2_mat" rgba="0.40 0.35 0.30 1" specular="0.02" shininess="0.02"/>
+    <material name="trash_3_mat" rgba="0.50 0.40 0.30 1" specular="0.02" shininess="0.02"/>
+    <material name="trash_4_mat" rgba="0.60 0.50 0.35 1" specular="0.02" shininess="0.02"/>
+    <material name="trash_5_mat" rgba="0.35 0.30 0.25 1" specular="0.02" shininess="0.02"/>
+    <material name="trash_6_mat" rgba="0.45 0.40 0.35 1" specular="0.02" shininess="0.02"/>
+    <material name="trash_7_mat" rgba="0.33 0.36 0.42 1" specular="0.02" shininess="0.02"/>
+    <mesh name="trash_paper_vis_mesh" file="paper_ball/paper_ball.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col0" file="paper_ball/paper_ball_collision_0.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col1" file="paper_ball/paper_ball_collision_1.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col2" file="paper_ball/paper_ball_collision_2.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col3" file="paper_ball/paper_ball_collision_3.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col4" file="paper_ball/paper_ball_collision_4.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col5" file="paper_ball/paper_ball_collision_5.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col6" file="paper_ball/paper_ball_collision_6.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col7" file="paper_ball/paper_ball_collision_7.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col8" file="paper_ball/paper_ball_collision_8.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col9" file="paper_ball/paper_ball_collision_9.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col10" file="paper_ball/paper_ball_collision_10.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col11" file="paper_ball/paper_ball_collision_11.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col12" file="paper_ball/paper_ball_collision_12.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col13" file="paper_ball/paper_ball_collision_13.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col14" file="paper_ball/paper_ball_collision_14.obj" scale="0.016 0.016 0.016"/>
+    <mesh name="trash_paper_col15" file="paper_ball/paper_ball_collision_15.obj" scale="0.016 0.016 0.016"/>
+
+    <!-- Yam arm meshes -->
+    <mesh file="i2rt_yam/assets/model2.stl"/>
+    <mesh file="i2rt_yam/assets/model2__2.stl"/>
+    <mesh file="i2rt_yam/assets/model2__3.stl"/>
+    <mesh file="i2rt_yam/assets/model2__4.stl"/>
+    <mesh file="i2rt_yam/assets/model2__5.stl"/>
+    <mesh file="i2rt_yam/assets/model2__6.stl"/>
+    <mesh file="i2rt_yam/assets/model2__7.stl"/>
+    <mesh file="i2rt_yam/assets/model2__8.stl"/>
+    <mesh file="i2rt_yam/assets/model2__9.stl"/>
+    <mesh file="i2rt_yam/assets/model2__10.stl"/>
+    <mesh file="i2rt_yam/assets/model2__11.stl"/>
+    <mesh file="i2rt_yam/assets/model2__12.stl"/>
+    <mesh file="i2rt_yam/assets/model2__13.stl"/>
+    <mesh file="i2rt_yam/assets/model2__14.stl"/>
+    <mesh file="i2rt_yam/assets/model2__15.stl"/>
+    <mesh file="i2rt_yam/assets/model2__16.stl"/>
+    <mesh file="i2rt_yam/assets/model2__17.stl"/>
+    <mesh name="base_visual_gate" file="i2rt_yam/assets/base_visual_gate.stl"/>
+    <mesh name="camera_d405" file="i2rt_yam/assets/d405.stl"/>
+
+    <texture type="skybox" builtin="gradient" rgb1="1.0 1.0 1.0" rgb2="0.98 0.98 0.98" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge"
+      rgb1="0.55 0.55 0.55" rgb2="0.50 0.50 0.50" markrgb="0.6 0.6 0.6" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" diffuse="0.30 0.30 0.30" specular="0.05 0.05 0.05"/>
+    <geom name="floor" size="0 0 0.05" type="plane" contype="0" conaffinity="0" rgba="0.75 0.75 0.75 1"/>
+    <geom name="floor_collision" size="0 0 0.05" type="plane" group="3" rgba="0 0 0 0"/>
+
+    <geom type="mesh" contype="0" conaffinity="0" group="2" density="0" rgba="0.60 0.62 0.68 1" mesh="base_visual_gate"/>
+    <geom size="0.2975 0.65 0.375" pos="0 0 0.375" type="box" group="3" rgba="1 0 0 0.0"/>
+
+    <body name="gate_collision" pos="0 0 0.75">
+      <geom size="0.015 0.015 0.45" pos="0 0.575 0.45" type="box" group="3" rgba="1 0 0 0.0"/>
+      <geom size="0.015 0.015 0.45" pos="0 -0.575 0.45" type="box" group="3" rgba="1 0 0 0.0"/>
+      <geom size="0.015 0.015 0.59" pos="0 0 0.915" quat="0.707107 0.707107 0 0" type="box" group="3" rgba="1 0 0 0.0"/>
+      <body name="top_bar_center" pos="0 0 0.915">
+        <body name="top_camera_d405" pos="0.08600512 -0.009 0.03932053" quat="0.183012 0.683013 0.683013 0.183012">
+          <geom type="mesh" contype="0" conaffinity="0" group="2" density="0.001" mass="0.001" rgba="0.22 0.22 0.24 1" mesh="camera_d405"/>
+          <body name="top_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+            <camera name="top" pos="0 0 0" quat="0 1 0 0" fovy="58"/>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <geom name="back_wall" type="box" size="0.005 0.65 1.0" pos="0.9 0 1.0" group="2" contype="0" conaffinity="0" rgba="0.88 0.88 0.88 1"/>
+    <geom name="back_wall_collision" type="box" size="0.005 0.65 1.0" pos="0.9 0 1.0" group="3" rgba="0 0 0 0"/>
+    <geom name="left_wall" type="box" size="0.45 0.005 1.0" pos="0.45 0.65 1.0" group="2" contype="0" conaffinity="0" rgba="0.88 0.88 0.88 1"/>
+    <geom name="left_wall_collision" type="box" size="0.45 0.005 1.0" pos="0.45 0.65 1.0" group="3" rgba="0 0 0 0"/>
+    <geom name="right_wall" type="box" size="0.45 0.005 1.0" pos="0.45 -0.65 1.0" group="2" contype="0" conaffinity="0" rgba="0.88 0.88 0.88 1"/>
+    <geom name="right_wall_collision" type="box" size="0.45 0.005 1.0" pos="0.45 -0.65 1.0" group="3" rgba="0 0 0 0"/>
+
+    
+    <!-- Side cameras on cage walls -->
+    
+    <!-- Overhead camera -->
+    <body name="overhead_camera" pos="0.55 0.0 1.6">
+      <camera name="overhead" pos="0 0 0" quat="0.707 0 0 -0.707" fovy="60"/>
+    </body>
+
+    <body name="left_side_camera" pos="0.5 0.55 1.05" euler="-1.3 0 3.14159">
+      <camera name="left_side" pos="0 0 0" fovy="70"/>
+    </body>
+    <body name="right_side_camera" pos="0.5 -0.55 1.05" euler="1.3 0 0">
+      <camera name="right_side" pos="0 0 0" fovy="70"/>
+    </body>
+
+    <body name="play_table">
+      <geom size="0.2975 0.65 0.005" pos="0.6 0 0.745" type="box" group="2" contype="0" conaffinity="0" rgba="0.92 0.92 0.92 1"/>
+    </body>
+    <geom name="table_plane" type="plane" size="0.2975 0.65 0.01" pos="0.6 0 0.75" rgba="0 0 0 0" group="3"/>
+
+    <!-- ==================== SWEEP TASK OBJECTS ==================== -->
+
+    <!-- Brush -->
+    <body name="brush" pos="0.50 0.20 0.77" quat="0 -0.707 0 0.707">
+      <freejoint name="brush_jnt"/>
+      <geom name="brush_handle_vis" type="mesh" mesh="brush_handle" material="brush_bristle_mat" contype="0" conaffinity="0" density="0" group="2"/>
+      <geom name="brush_bristle_vis" type="mesh" mesh="brush_bristles" material="brush_handle_mat" contype="0" conaffinity="0" density="0" group="2" mass="0.010"/>
+      <geom mesh="brush_col0" class="sweep_tool_col"/>
+      <geom mesh="brush_col1" class="sweep_tool_col"/>
+      <geom name="brush_handle_grip" type="box" size="0.007 0.040 0.010" pos="0 -0.095 0"
+        condim="6" friction="8.0 0.3 0.03" priority="4" solref="0.002 1" solimp="0.999 0.999 0.001" group="3" rgba="0.55 0.55 0.55 1"/>
+    </body>
+
+    <!-- Garbage can (~17cm x 20cm) -->
+    <body name="bin_container" pos="0.65 0.0 0.83" quat="0.707 0.707 0 0">
+      <freejoint name="bin_joint"/>
+      <geom name="gc_vis" type="mesh" mesh="garbage_can_vis" material="garbage_can_mat" contype="0" conaffinity="0" group="2" density="0" mass="0.15"/>
+      <geom name="gc_inner" type="mesh" mesh="garbage_can_inner" material="garbage_can_mat" contype="0" conaffinity="0" group="2" density="0"/>
+      <geom mesh="gc_col0" class="sweep_pan_col"/>
+      <geom mesh="gc_col1" class="sweep_pan_col"/>
+      <geom mesh="gc_col2" class="sweep_pan_col"/>
+      <geom mesh="gc_col3" class="sweep_pan_col"/>
+      <geom mesh="gc_col4" class="sweep_pan_col"/>
+      <geom mesh="gc_col5" class="sweep_pan_col"/>
+      <geom mesh="gc_col6" class="sweep_pan_col"/>
+      <geom mesh="gc_col7" class="sweep_pan_col"/>
+      <geom mesh="gc_col8" class="sweep_pan_col"/>
+      <geom mesh="gc_col9" class="sweep_pan_col"/>
+      <geom mesh="gc_col10" class="sweep_pan_col"/>
+      <geom mesh="gc_col11" class="sweep_pan_col"/>
+    </body>
+
+    <!-- Dustpan -->
+    <body name="dustpan" pos="0.70 -0.23 0.80" quat="0.707 0.707 0 0">
+      <freejoint name="dustpan_jnt"/>
+      <geom name="dustpan_vis" mesh="dustpan_vis" material="dustpan_mat" class="sweep_tool" mass="0.04"/>
+      <!-- Pan collision: slightly grippier than the bin so scraps settle instead of skating -->
+      <geom mesh="dustpan_col0" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col1" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col2" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col3" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col4" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col5" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col6" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col7" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col8" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col9" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col10" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col11" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col12" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col13" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col14" class="dustpan_pan_col"/>
+      <geom mesh="dustpan_col15" class="dustpan_pan_col"/>
+      <!-- Handle collision (grippy) -->
+      <geom name="dustpan_handle_grip" type="box" size="0.012 0.007 0.035" pos="0 0.023 -0.105"
+        condim="6" friction="5.0 0.2 0.02" solref="0.002 1" solimp="0.999 0.999 0.001" density="0" group="3" rgba="0.0 1.0 0.35 0.45"/>
+    </body>
+
+    <!-- Paper-ball debris to sweep up -->
+    <body name="trash_1" pos="0.45 0.05 0.76">
+      <freejoint name="trash_1_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_1_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+    <body name="trash_2" pos="0.50 -0.10 0.76">
+      <freejoint name="trash_2_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_2_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+    <body name="trash_3" pos="0.57 0.05 0.76">
+      <freejoint name="trash_3_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_3_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+    <body name="trash_4" pos="0.54 -0.02 0.76">
+      <freejoint name="trash_4_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_4_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+    <body name="trash_5" pos="0.61 0.13 0.76">
+      <freejoint name="trash_5_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_5_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+    <body name="trash_6" pos="0.63 -0.10 0.76">
+      <freejoint name="trash_6_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_6_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+    <body name="trash_7" pos="0.47 -0.16 0.76">
+      <freejoint name="trash_7_jnt"/>
+      <geom mesh="trash_paper_vis_mesh" material="trash_7_mat" class="trash_paper_vis"/>
+      <geom mesh="trash_paper_col0" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col1" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col2" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col3" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col4" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col5" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col6" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col7" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col8" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col9" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col10" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col11" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col12" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col13" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col14" class="trash_paper_col"/>
+      <geom mesh="trash_paper_col15" class="trash_paper_col"/>
+    </body>
+
+    <!-- ==================== LEFT ARM ==================== -->
+    <body name="left_arm" pos="0.2525 0.31 0.76" childclass="yam">
+      <geom class="visual" pos="0 0 -0.0006" quat="1 0 0 1" mesh="model2"/>
+      <geom class="collision" size="0.033 0.01" pos="0.0 0.0 0.026" quat="1 0 0 0"/>
+      <body name="left_link_1" pos="0 0 0.0631" quat="1 0 0 1">
+        <inertial pos="-0.00192861 -0.00795735 0.0208176" quat="0.297851 0.642634 0.360045 0.607185" mass="0.12415"
+          diaginertia="0.000180751 0.000145532 5.89179e-05"/>
+        <joint name="left_joint1" range="-2.61799 3.05433" class="dm4340"/>
+        <geom class="visual" pos="5.26159e-07 2.34355e-07 -0.0632" quat="1 0 0 0" mesh="model2__2"/>
+        <body name="left_link_2" pos="2.5e-05 -0.02 0.0409" quat="1 1 1 1" gravcomp="1">
+          <inertial pos="0.132008 2.10599e-06 0.000293073" quat="1 1 1 1" mass="1.24434"
+            diaginertia="0.0121902 0.0121318 0.000683304"/>
+          <joint name="left_joint2" range="0 3.66519" class="dm4340"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="1 -1 -1 -1" mesh="model2__3"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="1 -1 -1 -1" mesh="model2__4"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="1 -1 -1 -1" mesh="model2__5" material="white"/>
+          <geom class="collision" size="0.032 0.11" pos="0.13 0 0" quat="1 0 1 0"/>
+          <geom class="collision" size="0.033 0.02" pos="0 0.0 0" quat="1 0 0 0"/>
+          <geom class="collision" size="0.033 0.025" pos="0.265 0 0" quat="1 0 0 0"/>
+          <body name="left_link_3" pos="0.264 0 0" quat="0 1 0 0" gravcomp="1">
+            <inertial pos="-0.121816 -0.054846 -0.000111108" quat="1 1 1 1" mass="0.853698"
+              diaginertia="0.00699732 0.00696112 0.000788244"/>
+            <joint name="left_joint3" range="0 3.66519" class="dm4340"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__6"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__7"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__8" material="white"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__9"/>
+            <geom class="collision" size="0.034 0.12" pos="-0.14 -0.06 0.0" quat="1 0 1 0"/>
+            <geom class="collision" size="0.034 0.015" pos="-0.24 -0.06 0.0" quat="1 0 0 0"/>
+            <body name="left_link_4" pos="-0.245 -0.06 0" quat="1 0 0 0" gravcomp="1">
+              <inertial pos="-0.0769778 -0.0527104 0.000154878" quat="0.667 0.667 -0.236 -0.236" mass="0.463511"
+                diaginertia="0.000791532 0.000744733 0.000282116"/>
+              <joint name="left_joint4" range="-1.5708 1.5708" class="dm4310"/>
+              <geom class="visual" pos="0.00100023 0.164101 2.44738e-05" quat="1 1 1 -1" mesh="model2__10"/>
+              <geom class="collision" size="0.03 0.015" pos="-0.073 -0.06 0.0" quat="1 1 0 0"/>
+              <body name="left_link_5" pos="-0.074 -0.0395 2.5e-05" quat="1 -1 1 1" gravcomp="1">
+                <inertial pos="3.64861e-05 0.00025665 0.0353526" quat="1 0 0 0" mass="0.350962"
+                  diaginertia="0.000197802 0.0001775 0.000147402"/>
+                <joint name="left_joint5" range="-1.5708 1.5708" class="dm4310"/>
+                <geom class="visual" pos="0 -0.0749971 0.203601" quat="1.32679e-06 1 0 0" mesh="model2__11"/>
+                <geom class="collision" size="0.030 0.015" pos="0 0.025 0.0395" quat="1 1 0 0"/>
+                <body name="left_link_6" pos="0 0.0353 0.0395" quat="1 -1 0 0" gravcomp="1">
+                  <inertial pos="-0.000217767 7.37059e-05 0.0270545" quat="1 1 0 0" mass="0.367476"
+                    diaginertia="0.000265958 0.000242686 0.000227409"/>
+                  <joint name="left_joint6" range="-2.0944 2.0944" class="dm4310"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="1 -1 0 0" mesh="model2__12"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="1 -1 0 0" mesh="model2__13"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 0.039 0.052" quat="1 0 1 0"/>
+                  <geom class="collision" size="0.030 0.005" pos="0 0.0 0.03" quat="1 0 0 1"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 -0.039 0.052" quat="1 0 1 0"/>
+                  <site name="left_tcp_site" pos="0 0 0" quat="1 0 0 -1" size="0.005" rgba="1 0 0 1" group="4"/>
+                  <site name="left_grasp_site" pos="0 0 0.1347" quat="1 0 0 -1" size="0.005" rgba="0 1 0 1" group="4"/>
+                  <body name="left_camera_d405" pos="-0.0107 0.095 0.062" quat="0.906 0.423 0 0">
+                    <geom type="mesh" contype="0" conaffinity="0" group="2" density="0.001" mass="0.001"
+                      rgba="0.22 0.22 0.24 1" mesh="camera_d405"/>
+                    <geom name="left_cam_col" type="sphere" size="0.02" pos="0 0 0"
+                      group="3" rgba="0.1 0.4 1 0.3" mass="0.001"/>
+                    <body name="left_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+                      <camera name="left" pos="0 0 0" quat="0 1 0 0" fovy="58"/>
+                    </body>
+                  </body>
+                  <body name="left_link_left_finger" pos="-0.037 0.0392 0.0605" quat="1 0 1 0" gravcomp="1">
+                    <inertial pos="-0.0192995 -0.0365902 0.039774" quat="0.757351 0.568898 -0.3199 0.0" mass="0.118"
+                      diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint class="finger" name="left_left_finger" range="-0.00205 0.0475"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="1 -1 -1 -1" mesh="model2__14"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="1 -1 -1 -1" mesh="model2__15"/>
+                    <body name="left_lf_rot" quat="1 -1 -1 1" pos="0.0 -0.0392 0.037" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0.0 -0.02 0.012" quat="1 0 1 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="-0.02 -0.01 0.032" quat="1 0 2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="left_lf_down" quat="1 0 0 0" pos="-0.044 0.0 0.0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0.0 -0.020 0.012" quat="1 -0.1 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.04" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="0 -0.0024 0.046" quat="1 0 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.039" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="0.027 -0.0024 0.053" quat="1 0 2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                  <body name="left_link_right_finger" pos="0.037 -0.0392 0.0605" quat="1 0 1 0" gravcomp="1">
+                    <inertial pos="-0.0192995 0.0365902 -0.039774" quat="-0.757351 0.568898 -0.3199 0" mass="0.118"
+                      diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint class="finger" name="left_right_finger" range="-0.0475 0.00205"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="1 -1 -1 -1" mesh="model2__16"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="1 -1 -1 -1" mesh="model2__17"/>
+                    <body name="left_rf_rot" quat="1 1 -1 -1" pos="0.0 0.0392 -0.037" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0.0 -0.02 0.012" quat="1 0 1 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="0.02 -0.01 0.032" quat="1 0 -2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="left_rf_down" quat="1 0 0 0" pos="0.044 0.0 0.0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0.0 -0.020 0.012" quat="1 -0.1 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.04" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="0 -0.0024 0.046" quat="1 0 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.039" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="-0.027 -0.0024 0.053" quat="1 0 -2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- ==================== RIGHT ARM ==================== -->
+    <body name="right_arm" pos="0.2525 -0.31 0.76" childclass="yam">
+      <geom class="visual" pos="0 0 -0.0006" quat="1 0 0 1" mesh="model2"/>
+      <geom class="collision" size="0.033 0.01" pos="0.0 0.0 0.026" quat="1 0 0 0"/>
+      <body name="right_link_1" pos="0 0 0.0631" quat="1 0 0 1">
+        <inertial pos="-0.00192861 -0.00795735 0.0208176" quat="0.297851 0.642634 0.360045 0.607185" mass="0.12415"
+          diaginertia="0.000180751 0.000145532 5.89179e-05"/>
+        <joint name="right_joint1" range="-2.61799 3.05433" class="dm4340"/>
+        <geom class="visual" pos="5.26159e-07 2.34355e-07 -0.0632" quat="1 0 0 0" mesh="model2__2"/>
+        <body name="right_link_2" pos="2.5e-05 -0.02 0.0409" quat="1 1 1 1" gravcomp="1">
+          <inertial pos="0.132008 2.10599e-06 0.000293073" quat="1 1 1 1" mass="1.24434"
+            diaginertia="0.0121902 0.0121318 0.000683304"/>
+          <joint name="right_joint2" range="0 3.66519" class="dm4340"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="1 -1 -1 -1" mesh="model2__3"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="1 -1 -1 -1" mesh="model2__4"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="1 -1 -1 -1" mesh="model2__5" material="white"/>
+          <geom class="collision" size="0.032 0.11" pos="0.13 0 0" quat="1 0 1 0"/>
+          <geom class="collision" size="0.033 0.02" pos="0 0.0 0" quat="1 0 0 0"/>
+          <geom class="collision" size="0.033 0.025" pos="0.265 0 0" quat="1 0 0 0"/>
+          <body name="right_link_3" pos="0.264 0 0" quat="0 1 0 0" gravcomp="1">
+            <inertial pos="-0.121816 -0.054846 -0.000111108" quat="1 1 1 1" mass="0.853698"
+              diaginertia="0.00699732 0.00696112 0.000788244"/>
+            <joint name="right_joint3" range="0 3.66519" class="dm4340"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__6"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__7"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__8" material="white"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="1 1 1 -1" mesh="model2__9"/>
+            <geom class="collision" size="0.034 0.12" pos="-0.14 -0.06 0.0" quat="1 0 1 0"/>
+            <geom class="collision" size="0.034 0.015" pos="-0.24 -0.06 0.0" quat="1 0 0 0"/>
+            <body name="right_link_4" pos="-0.245 -0.06 0" quat="1 0 0 0" gravcomp="1">
+              <inertial pos="-0.0769778 -0.0527104 0.000154878" quat="0.667 0.667 -0.236 -0.236" mass="0.463511"
+                diaginertia="0.000791532 0.000744733 0.000282116"/>
+              <joint name="right_joint4" range="-1.5708 1.5708" class="dm4310"/>
+              <geom class="visual" pos="0.00100023 0.164101 2.44738e-05" quat="1 1 1 -1" mesh="model2__10"/>
+              <geom class="collision" size="0.03 0.015" pos="-0.073 -0.06 0.0" quat="1 1 0 0"/>
+              <body name="right_link_5" pos="-0.074 -0.0395 2.5e-05" quat="1 -1 1 1" gravcomp="1">
+                <inertial pos="3.64861e-05 0.00025665 0.0353526" quat="1 0 0 0" mass="0.350962"
+                  diaginertia="0.000197802 0.0001775 0.000147402"/>
+                <joint name="right_joint5" range="-1.5708 1.5708" class="dm4310"/>
+                <geom class="visual" pos="0 -0.0749971 0.203601" quat="1.32679e-06 1 0 0" mesh="model2__11"/>
+                <geom class="collision" size="0.030 0.015" pos="0 0.025 0.0395" quat="1 1 0 0"/>
+                <body name="right_link_6" pos="0 0.0353 0.0395" quat="1 -1 0 0" gravcomp="1">
+                  <inertial pos="-0.000217767 7.37059e-05 0.0270545" quat="1 1 0 0" mass="0.367476"
+                    diaginertia="0.000265958 0.000242686 0.000227409"/>
+                  <joint name="right_joint6" range="-2.0944 2.0944" class="dm4310"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="1 -1 0 0" mesh="model2__12"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="1 -1 0 0" mesh="model2__13"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 0.039 0.052" quat="1 0 1 0"/>
+                  <geom class="collision" size="0.030 0.005" pos="0 0.0 0.03" quat="1 0 0 1"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 -0.039 0.052" quat="1 0 1 0"/>
+                  <site name="right_tcp_site" pos="0 0 0" quat="1 0 0 -1" size="0.005" rgba="1 0 0 1" group="4"/>
+                  <site name="right_grasp_site" pos="0 0 0.1347" quat="1 0 0 -1" size="0.005" rgba="0 1 0 1" group="4"/>
+                  <body name="right_camera_d405" pos="-0.0107 0.095 0.062" quat="0.906 0.423 0 0">
+                    <geom type="mesh" contype="0" conaffinity="0" group="2" density="0.001" mass="0.001"
+                      rgba="0.22 0.22 0.24 1" mesh="camera_d405"/>
+                    <geom name="right_cam_col" type="sphere" size="0.02" pos="0 0 0"
+                      group="3" rgba="0.1 0.4 1 0.3" mass="0.001"/>
+                    <body name="right_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+                      <camera name="right" pos="0 0 0" quat="0 1 0 0" fovy="58"/>
+                    </body>
+                  </body>
+                  <body name="right_link_left_finger" pos="-0.037 0.0392 0.0605" quat="1 0 1 0" gravcomp="1">
+                    <inertial pos="-0.0192995 -0.0365902 0.039774" quat="0.757351 0.568898 -0.3199 0.0" mass="0.118"
+                      diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint class="finger" name="right_left_finger" range="-0.00205 0.0475"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="1 -1 -1 -1" mesh="model2__14"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="1 -1 -1 -1" mesh="model2__15"/>
+                    <body name="right_lf_rot" quat="1 -1 -1 1" pos="0.0 -0.0392 0.037" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0.0 -0.02 0.012" quat="1 0 1 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="-0.02 -0.01 0.032" quat="1 0 2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="right_lf_down" quat="1 0 0 0" pos="-0.044 0.0 0.0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0.0 -0.020 0.012" quat="1 -0.1 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.04" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="0 -0.0024 0.046" quat="1 0 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.039" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="0.027 -0.0024 0.053" quat="1 0 2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                  <body name="right_link_right_finger" pos="0.037 -0.0392 0.0605" quat="1 0 1 0" gravcomp="1">
+                    <inertial pos="-0.0192995 0.0365902 -0.039774" quat="-0.757351 0.568898 -0.3199 0" mass="0.118"
+                      diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint class="finger" name="right_right_finger" range="-0.0475 0.00205"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="1 -1 -1 -1" mesh="model2__16"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="1 -1 -1 -1" mesh="model2__17"/>
+                    <body name="right_rf_rot" quat="1 1 -1 -1" pos="0.0 0.0392 -0.037" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0.0 -0.02 0.012" quat="1 0 1 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="0.02 -0.01 0.032" quat="1 0 -2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="right_rf_down" quat="1 0 0 0" pos="0.044 0.0 0.0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0.0 -0.020 0.012" quat="1 -0.1 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="1 -0.2 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.04" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="0 -0.0024 0.046" quat="1 0 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" type="box" size="0.006 0.002 0.039" friction="4.0 0.1 0.01" priority="2" solref="0.004 1" solimp="0.998 0.998 0.001" pos="-0.027 -0.0024 0.053" quat="1 0 -2.5 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003  -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+  </worldbody>
+
+  <equality>
+    <joint joint1="left_left_finger" joint2="left_right_finger" polycoef="0 -1 0 0 0"/>
+    <joint joint1="right_left_finger" joint2="right_right_finger" polycoef="0 -1 0 0 0"/>
+  </equality>
+
+  <actuator>
+    <position name="left_joint1" joint="left_joint1" class="dm4340"/>
+    <position name="left_joint2" joint="left_joint2" class="dm4340"/>
+    <position name="left_joint3" joint="left_joint3" class="dm4340"/>
+    <position name="left_joint4" joint="left_joint4" class="dm4310" kp="20" kv=".5"/>
+    <position name="left_joint5" joint="left_joint5" class="dm4310"/>
+    <position name="left_joint6" joint="left_joint6" class="dm4310"/>
+    <position class="finger" name="left_gripper" joint="left_left_finger"/>
+    <position name="right_joint1" joint="right_joint1" class="dm4340"/>
+    <position name="right_joint2" joint="right_joint2" class="dm4340"/>
+    <position name="right_joint3" joint="right_joint3" class="dm4340"/>
+    <position name="right_joint4" joint="right_joint4" class="dm4310" kp="20" kv=".5"/>
+    <position name="right_joint5" joint="right_joint5" class="dm4310"/>
+    <position name="right_joint6" joint="right_joint6" class="dm4310"/>
+    <position class="finger" name="right_gripper" joint="right_left_finger"/>
+  </actuator>
+
+  <keyframe>
+    <key name="home"
+      qpos="0.50 0.20 0.77 0 -0.707 0 0.707  0.65 0.0 0.83 0.707 0.707 0 0  0.70 -0.20 0.80 0.707 0.707 0 0
+            0.45 0.05 0.76 1 0 0 0  0.50 -0.10 0.76 1 0 0 0  0.55 0.15 0.76 1 0 0 0
+            0.50 -0.08 0.76 1 0 0 0  0.58 0.12 0.76 1 0 0 0  0.63 -0.10 0.76 1 0 0 0
+            0 1.047 1.047 0 0 0 0 0  0 1.047 1.047 0 0 0 0 0"
+      ctrl="0 1.047 1.047 0 0 0 0  0 1.047 1.047 0 0 0 0"/>
+  </keyframe>
+</mujoco>

@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="model">
+  <compiler angle="radian" />
+  <asset>
+    <mesh file="visual/DishRack044.obj" name="DishRack044_vis" />
+    <texture file="visual/T_DishRack044_BC001.png" name="DishRack044_material" type="2d" />
+    <material name="DishRack044_material" rgba="1 1 1 1.0" texture="DishRack044_material" shininess="0.4472135901451111" specular="0.3103448502657381" />
+    <mesh file="collision/collision_mesh_collision_0.obj" name="DishRack044_collision_mesh_0" />
+    <mesh file="collision/collision_mesh_collision_1.obj" name="DishRack044_collision_mesh_1" />
+    <mesh file="collision/collision_mesh_collision_2.obj" name="DishRack044_collision_mesh_2" />
+    <mesh file="collision/collision_mesh_collision_3.obj" name="DishRack044_collision_mesh_3" />
+    <mesh file="collision/collision_mesh_collision_4.obj" name="DishRack044_collision_mesh_4" />
+    <mesh file="collision/collision_mesh_collision_5.obj" name="DishRack044_collision_mesh_5" />
+    <mesh file="collision/collision_mesh_collision_6.obj" name="DishRack044_collision_mesh_6" />
+    <mesh file="collision/collision_mesh_collision_7.obj" name="DishRack044_collision_mesh_7" />
+    <mesh file="collision/collision_mesh_collision_8.obj" name="DishRack044_collision_mesh_8" />
+    <mesh file="collision/collision_mesh_collision_9.obj" name="DishRack044_collision_mesh_9" />
+    <mesh file="collision/collision_mesh_collision_10.obj" name="DishRack044_collision_mesh_10" />
+    <mesh file="collision/collision_mesh_collision_11.obj" name="DishRack044_collision_mesh_11" />
+    <mesh file="collision/collision_mesh_collision_12.obj" name="DishRack044_collision_mesh_12" />
+    <mesh file="collision/collision_mesh_collision_13.obj" name="DishRack044_collision_mesh_13" />
+    <mesh file="collision/collision_mesh_collision_14.obj" name="DishRack044_collision_mesh_14" />
+    <mesh file="collision/collision_mesh_collision_15.obj" name="DishRack044_collision_mesh_15" />
+    <mesh file="collision/collision_mesh_collision_16.obj" name="DishRack044_collision_mesh_16" />
+    <mesh file="collision/collision_mesh_collision_17.obj" name="DishRack044_collision_mesh_17" />
+    <mesh file="collision/collision_mesh_collision_18.obj" name="DishRack044_collision_mesh_18" />
+    <mesh file="collision/collision_mesh_collision_19.obj" name="DishRack044_collision_mesh_19" />
+    <mesh file="collision/collision_mesh_collision_20.obj" name="DishRack044_collision_mesh_20" />
+    <mesh file="collision/collision_mesh_collision_21.obj" name="DishRack044_collision_mesh_21" />
+    <mesh file="collision/collision_mesh_collision_22.obj" name="DishRack044_collision_mesh_22" />
+    <mesh file="collision/collision_mesh_collision_23.obj" name="DishRack044_collision_mesh_23" />
+    <mesh file="collision/collision_mesh_collision_24.obj" name="DishRack044_collision_mesh_24" />
+    <mesh file="collision/collision_mesh_collision_25.obj" name="DishRack044_collision_mesh_25" />
+    <mesh file="collision/collision_mesh_collision_26.obj" name="DishRack044_collision_mesh_26" />
+    <mesh file="collision/collision_mesh_collision_27.obj" name="DishRack044_collision_mesh_27" />
+    <mesh file="collision/collision_mesh_collision_28.obj" name="DishRack044_collision_mesh_28" />
+    <mesh file="collision/collision_mesh_collision_29.obj" name="DishRack044_collision_mesh_29" />
+    <mesh file="collision/collision_mesh_collision_30.obj" name="DishRack044_collision_mesh_30" />
+    <mesh file="collision/collision_mesh_collision_31.obj" name="DishRack044_collision_mesh_31" />
+    <mesh file="collision/collision_mesh_collision_32.obj" name="DishRack044_collision_mesh_32" />
+    <mesh file="collision/collision_mesh_collision_33.obj" name="DishRack044_collision_mesh_33" />
+    <mesh file="collision/collision_mesh_collision_34.obj" name="DishRack044_collision_mesh_34" />
+    <mesh file="collision/collision_mesh_collision_35.obj" name="DishRack044_collision_mesh_35" />
+    <mesh file="collision/collision_mesh_collision_36.obj" name="DishRack044_collision_mesh_36" />
+    <mesh file="collision/collision_mesh_collision_37.obj" name="DishRack044_collision_mesh_37" />
+    <mesh file="collision/collision_mesh_collision_38.obj" name="DishRack044_collision_mesh_38" />
+    <mesh file="collision/collision_mesh_collision_39.obj" name="DishRack044_collision_mesh_39" />
+    <mesh file="collision/collision_mesh_collision_40.obj" name="DishRack044_collision_mesh_40" />
+    <mesh file="collision/collision_mesh_collision_41.obj" name="DishRack044_collision_mesh_41" />
+    <mesh file="collision/collision_mesh_collision_42.obj" name="DishRack044_collision_mesh_42" />
+    <mesh file="collision/collision_mesh_collision_43.obj" name="DishRack044_collision_mesh_43" />
+    <mesh file="collision/collision_mesh_collision_44.obj" name="DishRack044_collision_mesh_44" />
+    <mesh file="collision/collision_mesh_collision_45.obj" name="DishRack044_collision_mesh_45" />
+    <mesh file="collision/collision_mesh_collision_46.obj" name="DishRack044_collision_mesh_46" />
+    <mesh file="collision/collision_mesh_collision_47.obj" name="DishRack044_collision_mesh_47" />
+    <mesh file="collision/collision_mesh_collision_48.obj" name="DishRack044_collision_mesh_48" />
+    <mesh file="collision/collision_mesh_collision_49.obj" name="DishRack044_collision_mesh_49" />
+    <mesh file="collision/collision_mesh_collision_50.obj" name="DishRack044_collision_mesh_50" />
+    <mesh file="collision/collision_mesh_collision_51.obj" name="DishRack044_collision_mesh_51" />
+    <mesh file="collision/collision_mesh_collision_52.obj" name="DishRack044_collision_mesh_52" />
+    <mesh file="collision/collision_mesh_collision_53.obj" name="DishRack044_collision_mesh_53" />
+    <mesh file="collision/collision_mesh_collision_54.obj" name="DishRack044_collision_mesh_54" />
+    <mesh file="collision/collision_mesh_collision_55.obj" name="DishRack044_collision_mesh_55" />
+    <mesh file="collision/collision_mesh_collision_56.obj" name="DishRack044_collision_mesh_56" />
+    <mesh file="collision/collision_mesh_collision_57.obj" name="DishRack044_collision_mesh_57" />
+    <mesh file="collision/collision_mesh_collision_58.obj" name="DishRack044_collision_mesh_58" />
+    <mesh file="collision/collision_mesh_collision_59.obj" name="DishRack044_collision_mesh_59" />
+    <mesh file="collision/collision_mesh_collision_60.obj" name="DishRack044_collision_mesh_60" />
+    <mesh file="collision/collision_mesh_collision_61.obj" name="DishRack044_collision_mesh_61" />
+    <mesh file="collision/collision_mesh_collision_62.obj" name="DishRack044_collision_mesh_62" />
+    <mesh file="collision/collision_mesh_collision_63.obj" name="DishRack044_collision_mesh_63" />
+    </asset>
+  <default>
+    <default class="visual">
+      <geom conaffinity="0" contype="0" group="1" type="mesh" density="100" />
+      </default>
+    <default class="collision">
+      <geom group="0" rgba="1 1 1 0.25" density="100" solimp="0.95 0.98 0.001" solref="0.004 1" />
+      </default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0" />
+      </default>
+    </default>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom mesh="DishRack044_vis" type="mesh" class="visual" material="DishRack044_material" />
+        <geom mesh="DishRack044_collision_mesh_0" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_1" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_2" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_3" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_4" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_5" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_6" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_7" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_8" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_9" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_10" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_11" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_12" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_13" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_14" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_15" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_16" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_17" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_18" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_19" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_20" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_21" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_22" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_23" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_24" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_25" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_26" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_27" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_28" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_29" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_30" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_31" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_32" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_33" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_34" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_35" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_36" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_37" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_38" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_39" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_40" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_41" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_42" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_43" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_44" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_45" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_46" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_47" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_48" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_49" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_50" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_51" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_52" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_53" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_54" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_55" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_56" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_57" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_58" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_59" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_60" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_61" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_62" type="mesh" class="collision" />
+        <geom mesh="DishRack044_collision_mesh_63" type="mesh" class="collision" />
+        <geom class="region" name="reg_bbox" type="box" pos="-0.001009999999999997 -0.0012064999999999992 0.0980655" size="0.2 0.1142855 0.1009525" />
+        <geom class="region" name="reg_int_0" type="box" pos="-0.025 -0.003255732 0.063" size="0.15 0.1 0.031"/>
+        <geom class="region" name="reg_int_1" type="box" pos="-0.034601897 -0.000981301 0.201" size="0.15 0.04 0.05" />
+        <geom class="region" name="reg_int_2" type="box" pos="0.17 0.02 0.133" size="0.02 0.06 0.05" />
+        </body>
+      </body>
+    </worldbody>
+  </mujoco>

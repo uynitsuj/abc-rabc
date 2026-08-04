@@ -1,0 +1,44 @@
+# Broad qualitative sweep across every sim task.
+#
+# IMPORTANT: only `bottles` and `sweep` have automated evaluators, so only those
+# two report success rates. Every other task is rolled out and recorded to video
+# for qualitative review, but its success is reported as null in results/summary.
+#
+#   python -m yam_sim.examples.run_eval \
+#       --config yam_sim/eval/configs/all_tasks.yaml \
+#       --models mymodel=0.0.0.0:8000
+
+output_dir: /tmp/yam_eval_all
+
+tasks:
+  # --- scored ---
+  - task: throw_plastic_bottles_in_bin
+    episodes: 10
+    num_worlds: 5
+    max_chunks: 16
+  - task: sweep_away_paper_scraps_from_table
+    episodes: 10
+    num_worlds: 5
+    max_chunks: 20
+  # --- qualitative (video only, success = null) ---
+  - task: put_markers_in_top_drawer
+  - task: put_markers_in_middle_drawer
+  - task: put_markers_in_bottom_drawer
+  - task: pouring
+  - task: hang_mug_on_mug_rack
+  - task: turn_mug_right_side_up
+  - task: load_plates_into_dish_rack
+  - task: set_up_chess_pieces_on_board
+  - task: build_wood_block_tower
+  - task: spell_cat
+
+# Defaults applied to the qualitative tasks above (which omit per-task fields).
+episodes_default: 4
+num_worlds_default: 4
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+fps: 30
+video: true
+seed_base: 0

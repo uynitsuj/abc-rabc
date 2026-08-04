@@ -1,0 +1,63 @@
+{
+  "seed": 0,
+  "scene": "hybrid",
+  "num_chunks": 150,
+  "execute_dim": 15,
+  "bottle_mass": 0.015,
+  "bottle_alpha": 0.5,
+  "all_green_bottles": false,
+  "prompt": "throw plastic bottles in bin",
+  "init_q": null,
+  "actions_shape": [
+    2250,
+    14
+  ],
+  "bottles_in_bin": [
+    "bottle_1",
+    "bottle_2",
+    "bottle_3",
+    "bottle_4",
+    "bottle_5",
+    "bottle_6"
+  ],
+  "num_bottles_in_bin": 6,
+  "description": "6-IB success rollout \u2014 all 6 bottles deposited in bin. Config C17 (150 chunks, exec_dim=15, compound alpha=0.5). Checkpoint: far-wandb/FAR-abc/far-abc-XGYkwlRVLgwVCKSU-last:v200. NOTE: Exact replay requires matching hardware due to chaotic multi-body dynamics. Initial full qpos/qvel are provided in separate .npy files.",
+  "randomize_bottles": true,
+  "initial_bottle_positions": [
+    [
+      0.48127616337880774,
+      0.19588650039103989,
+      0.78
+    ],
+    [
+      0.37131081745936606,
+      -0.20643535014922965,
+      0.78
+    ],
+    [
+      0.35606551923209767,
+      0.166309922773969,
+      0.78
+    ],
+    [
+      0.3854823277606799,
+      0.06996051066376191,
+      0.78
+    ],
+    [
+      0.3930059862227139,
+      0.22233445852479194,
+      0.78
+    ],
+    [
+      0.4293666836313881,
+      0.13711684471710833,
+      0.78
+    ]
+  ],
+  "initial_bin_position": [
+    0.7,
+    0.0,
+    0.76
+  ]
+}

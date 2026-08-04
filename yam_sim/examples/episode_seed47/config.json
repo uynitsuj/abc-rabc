@@ -1,0 +1,41 @@
+{
+  "seed": 47,
+  "scene": "eval",
+  "num_chunks": 150,
+  "diffusion_steps": 5,
+  "jpeg_quality": 75,
+  "execute_dim": 30,
+  "bottle_mass": 0.015,
+  "bottle_alpha": 1.0,
+  "all_green_bottles": true,
+  "prompt": "throw plastic bottles in bin",
+  "ttrtc": false,
+  "init_q": [
+    -0.20656902,
+    0.47283894,
+    0.99431604,
+    -0.7043946,
+    -0.30842298,
+    -0.32864118,
+    0.9987507,
+    0.20160982,
+    0.39005876,
+    1.1182956,
+    -0.8726253,
+    0.13332571,
+    0.42629892,
+    0.9895317
+  ],
+  "actions_shape": [
+    4500,
+    14
+  ],
+  "states_shape": [
+    4501,
+    14
+  ],
+  "bottles_in_bin": [],
+  "num_bottles_in_bin": 0,
+  "description": "Ki14 LBM policy rollout with bimanual bottle manipulation. 150 chunks of 30 actions (4500 total timesteps).",
+  "wandb_run": "far-wandb/FAR-abc/runs/Ki14n2m8"
+}

@@ -24,6 +24,10 @@ dependencies = [
     "mcap-protobuf-support",
     # Optional: W&B logging in train.py (off by default; --log-wandb to enable).
     "wandb",
+    # Required by the vendored yam_sim sim environments (yam_sim/) used for
+    # batched sim eval on the six sim tasks.
+    "gymnasium",
+    "opencv-python",
 ]
 
 [tool.uv.sources]

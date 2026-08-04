@@ -1,0 +1,28 @@
+<mujoco model="brush">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <texture type="2d" name="material_0" file="material_0.png"/>
+    <material name="material_0" texture="material_0" specular="0.4000000000000001" shininess="0.001"/>
+    <mesh file="brush.obj"/>
+    <mesh file="brush_collision_0.obj"/>
+    <mesh file="brush_collision_1.obj"/>
+    <mesh file="brush_collision_2.obj"/>
+    <mesh file="brush_collision_3.obj"/>
+  </asset>
+  <worldbody>
+    <body name="brush">
+      <geom material="material_0" mesh="brush" class="visual"/>
+      <geom mesh="brush_collision_0" rgba="0.32667896552358233 0.5388072885325698 0.22580928888473373 1" class="collision"/>
+      <geom mesh="brush_collision_1" rgba="0.8023832508085338 0.06368797311396301 0.11559524605243376 1" class="collision"/>
+      <geom mesh="brush_collision_2" rgba="0.922264222351333 0.4330875405027115 0.7990789996892721 1" class="collision"/>
+      <geom mesh="brush_collision_3" rgba="0.8578127262924262 0.6173195407215124 0.8280446161690121 1" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>

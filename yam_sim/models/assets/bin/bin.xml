@@ -1,0 +1,57 @@
+<mujoco model="bin">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <texture type="2d" name="Material.001" file="Material.001.png"/>
+    <material name="Material.001" texture="Material.001" specular="0.5" shininess="0.5"/>
+    <mesh name="bin" file="bin_0.obj"/>
+    <mesh file="bin_collision_0.obj"/>
+    <mesh file="bin_collision_1.obj"/>
+    <mesh file="bin_collision_2.obj"/>
+    <mesh file="bin_collision_3.obj"/>
+    <mesh file="bin_collision_4.obj"/>
+    <mesh file="bin_collision_5.obj"/>
+    <mesh file="bin_collision_6.obj"/>
+    <mesh file="bin_collision_7.obj"/>
+    <mesh file="bin_collision_8.obj"/>
+    <mesh file="bin_collision_9.obj"/>
+    <mesh file="bin_collision_10.obj"/>
+    <mesh file="bin_collision_11.obj"/>
+    <mesh file="bin_collision_12.obj"/>
+    <mesh file="bin_collision_13.obj"/>
+    <mesh file="bin_collision_14.obj"/>
+    <mesh file="bin_collision_15.obj"/>
+    <mesh file="bin_collision_16.obj"/>
+    <mesh file="bin_collision_17.obj"/>
+  </asset>
+  <worldbody>
+    <body name="bin">
+      <freejoint/>
+      <geom material="Material.001" mesh="bin" class="visual"/>
+      <geom mesh="bin_collision_0" rgba="0.5656883503988486 0.11250936307537307 0.5581851554860262 1" class="collision"/>
+      <geom mesh="bin_collision_1" rgba="0.5860409715766185 0.6564956739943022 0.1791491181371545 1" class="collision"/>
+      <geom mesh="bin_collision_2" rgba="0.5002140867215783 0.5572480630139951 0.5924120710659968 1" class="collision"/>
+      <geom mesh="bin_collision_3" rgba="0.1995679167463621 0.22770707893569542 0.013270077059705954 1" class="collision"/>
+      <geom mesh="bin_collision_4" rgba="0.6236419864690763 0.9288387486241978 0.8689541363880593 1" class="collision"/>
+      <geom mesh="bin_collision_5" rgba="0.47626569814388764 0.212070288304262 0.46014263873888916 1" class="collision"/>
+      <geom mesh="bin_collision_6" rgba="0.6736496132621116 0.3805371033334769 0.32260282327390577 1" class="collision"/>
+      <geom mesh="bin_collision_7" rgba="0.8176373906829766 0.12693688868037034 0.2889806724678615 1" class="collision"/>
+      <geom mesh="bin_collision_8" rgba="0.49408272307867485 0.7033232004716612 0.14369687318346092 1" class="collision"/>
+      <geom mesh="bin_collision_9" rgba="0.26914901747654063 0.02923155756729412 0.7285023557282461 1" class="collision"/>
+      <geom mesh="bin_collision_10" rgba="0.9298450186296169 0.10897536287523268 0.5339485008899437 1" class="collision"/>
+      <geom mesh="bin_collision_11" rgba="0.5462123059798306 0.809050691629081 0.4511538502153206 1" class="collision"/>
+      <geom mesh="bin_collision_12" rgba="0.5328386039662832 0.9972994950728357 0.5927826799966235 1" class="collision"/>
+      <geom mesh="bin_collision_13" rgba="0.19465366742790524 0.9218905363018821 0.2837712535667377 1" class="collision"/>
+      <geom mesh="bin_collision_14" rgba="0.864748232398844 0.6700816530361328 0.8082797851728583 1" class="collision"/>
+      <geom mesh="bin_collision_15" rgba="0.6455027716649001 0.09141298711254053 0.11707035133939891 1" class="collision"/>
+      <geom mesh="bin_collision_16" rgba="0.7148353406462048 0.3414723618637244 0.8036983239255856 1" class="collision"/>
+      <geom mesh="bin_collision_17" rgba="0.40295595259673433 0.8311604535811642 0.9315085680782417 1" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>

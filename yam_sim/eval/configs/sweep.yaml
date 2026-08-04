@@ -1,0 +1,21 @@
+# Single-task deep eval: sweep away paper scraps from the table (scored by sweep_away).
+#
+#   python -m yam_sim.examples.run_eval \
+#       --config yam_sim/eval/configs/sweep.yaml \
+#       --models mymodel=0.0.0.0:8000
+
+output_dir: /tmp/yam_eval
+
+tasks:
+  - task: sweep
+    episodes: 50
+    num_worlds: 10
+    max_chunks: 20
+
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+fps: 30
+video: true
+seed_base: 0

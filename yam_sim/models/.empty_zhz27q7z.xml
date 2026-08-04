@@ -1,0 +1,643 @@
+<mujoco model="yam_mug_tree">
+  <compiler angle="radian" meshdir="/home/karimelrafi/yam_sim/yam_sim/models/assets/" texturedir="/home/karimelrafi/yam_sim/yam_sim/models/assets/"/>
+
+  <option integrator="implicitfast"/>
+
+  <size nkey="1"/>
+
+  <visual>
+    <global azimuth="120" elevation="-20" offwidth="1920" offheight="1080"/>
+    <quality shadowsize="8192" offsamples="16"/>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0 0 0" specular="0 0 0"/>
+  </visual>
+
+  <default>
+    <default class="yam">
+      <joint frictionloss="0.1"/>
+      <general biastype="affine" biasprm="0 -1"/>
+      <default class="dm4340">
+        <joint armature="0.032"/>
+        <general forcerange="-28 28" gainprm="40" biasprm="0 -40 -2.5"/>
+      </default>
+      <default class="dm4310">
+        <joint armature="0.0018"/>
+        <general forcerange="-10 10" gainprm="10" biasprm="0 -10 -1"/>
+      </default>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" density="0" material="black"/>
+      </default>
+      <default class="collision">
+        <geom type="capsule" condim="6" group="3" friction="2 0.1 0.01"/>
+        <default class="sphere_collision">
+          <geom size="0.0006 0 0" type="sphere" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="1 0 0 1"/>
+        </default>
+      </default>
+      <default class="finger">
+        <joint type="slide" armature="0.1"/>
+        <general ctrlrange="0 0.0495" gainprm="400" biasprm="0 -400 -14"/>
+      </default>
+    </default>
+    <default class="mug_col">
+      <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture type="2d" colorspace="linear" name="mug_tree_tex" file="mug_tree/texture.png"/>
+    <texture type="skybox" colorspace="auto" builtin="gradient" rgb1="1 1 1" rgb2="0.98 0.98 0.98" width="512" height="3072"/>
+    <texture type="2d" colorspace="auto" name="groundplane" builtin="checker" mark="edge" rgb1="0.55 0.55 0.55" markrgb="0.6 0.6 0.6" width="300" height="300"/>
+    <material name="black" rgba="0.3 0.3 0.3 1"/>
+    <material name="white" rgba="0.9 0.9 0.9 1"/>
+    <material name="mug_green" shininess="0.003" rgba="0.172 0.78 0.435 1"/>
+    <material name="mug_1_color" shininess="0.003" rgba="0.172 0.78 0.435 1"/>
+    <material name="mug_2_color" shininess="0.003" rgba="0.929 0.694 0.125 1"/>
+    <material name="mug_3_color" shininess="0.003" rgba="0.2 0.35 0.85 1"/>
+    <material name="mug_white" shininess="0.003" rgba="0.93 0.93 0.93 1"/>
+    <material name="mug_tree_mat" texture="mug_tree_tex" specular="0.3" shininess="0.3"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <material name="mug_0_mug_18_Mat_002" shininess="0.00226274" rgba="0.8 0.12 0.12 1"/>
+    <material name="mug_0_mug_18_material_078" shininess="0.00226274" rgba="0.8 0.8 0.8 1"/>
+    <material name="mug_1_mug_0_Mat_1" shininess="0.00226274" rgba="0.929 0.694 0.125 1"/>
+    <material name="mug_1_mug_0_material_047" shininess="0.00226274" rgba="0.93 0.93 0.93 1"/>
+    <material name="mug_2_mug_5_material_079" shininess="0.00226274" rgba="0.8 0.204667 0.04 1"/>
+    <mesh name="model2" file="i2rt_yam/assets/model2.stl"/>
+    <mesh name="model2__2" file="i2rt_yam/assets/model2__2.stl"/>
+    <mesh name="model2__3" file="i2rt_yam/assets/model2__3.stl"/>
+    <mesh name="model2__4" file="i2rt_yam/assets/model2__4.stl"/>
+    <mesh name="model2__5" file="i2rt_yam/assets/model2__5.stl"/>
+    <mesh name="model2__6" file="i2rt_yam/assets/model2__6.stl"/>
+    <mesh name="model2__7" file="i2rt_yam/assets/model2__7.stl"/>
+    <mesh name="model2__8" file="i2rt_yam/assets/model2__8.stl"/>
+    <mesh name="model2__9" file="i2rt_yam/assets/model2__9.stl"/>
+    <mesh name="model2__10" file="i2rt_yam/assets/model2__10.stl"/>
+    <mesh name="model2__11" file="i2rt_yam/assets/model2__11.stl"/>
+    <mesh name="model2__12" file="i2rt_yam/assets/model2__12.stl"/>
+    <mesh name="model2__13" file="i2rt_yam/assets/model2__13.stl"/>
+    <mesh name="model2__14" file="i2rt_yam/assets/model2__14.stl"/>
+    <mesh name="model2__15" file="i2rt_yam/assets/model2__15.stl"/>
+    <mesh name="model2__16" file="i2rt_yam/assets/model2__16.stl"/>
+    <mesh name="model2__17" file="i2rt_yam/assets/model2__17.stl"/>
+    <mesh name="base_visual_gate" file="i2rt_yam/assets/base_visual_gate.stl"/>
+    <mesh name="camera_d405" file="i2rt_yam/assets/d405.stl"/>
+    <mesh name="mug_tree" file="mug_tree/model.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_0" file="mug_tree/model_collision_0.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_1" file="mug_tree/model_collision_1.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_2" file="mug_tree/model_collision_2.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_3" file="mug_tree/model_collision_3.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_4" file="mug_tree/model_collision_4.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_5" file="mug_tree/model_collision_5.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_6" file="mug_tree/model_collision_6.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_7" file="mug_tree/model_collision_7.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_8" file="mug_tree/model_collision_8.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_9" file="mug_tree/model_collision_9.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_tree_col_10" file="mug_tree/model_collision_10.obj" scale="0.15 0.15 0.15"/>
+    <mesh name="mug_vis_0" file="mug/visual/model_normalized_0.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_vis_1" file="mug/visual/model_normalized_1.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_0" file="mug/collision/model_normalized_collision_0.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_1" file="mug/collision/model_normalized_collision_1.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_2" file="mug/collision/model_normalized_collision_2.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_3" file="mug/collision/model_normalized_collision_3.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_4" file="mug/collision/model_normalized_collision_4.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_5" file="mug/collision/model_normalized_collision_5.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_6" file="mug/collision/model_normalized_collision_6.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_7" file="mug/collision/model_normalized_collision_7.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_8" file="mug/collision/model_normalized_collision_8.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_9" file="mug/collision/model_normalized_collision_9.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_10" file="mug/collision/model_normalized_collision_10.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_11" file="mug/collision/model_normalized_collision_11.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_12" file="mug/collision/model_normalized_collision_12.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_13" file="mug/collision/model_normalized_collision_13.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_14" file="mug/collision/model_normalized_collision_14.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_15" file="mug/collision/model_normalized_collision_15.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_16" file="mug/collision/model_normalized_collision_16.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_17" file="mug/collision/model_normalized_collision_17.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_18" file="mug/collision/model_normalized_collision_18.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_19" file="mug/collision/model_normalized_collision_19.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_20" file="mug/collision/model_normalized_collision_20.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_21" file="mug/collision/model_normalized_collision_21.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_22" file="mug/collision/model_normalized_collision_22.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_23" file="mug/collision/model_normalized_collision_23.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_24" file="mug/collision/model_normalized_collision_24.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_25" file="mug/collision/model_normalized_collision_25.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_26" file="mug/collision/model_normalized_collision_26.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_27" file="mug/collision/model_normalized_collision_27.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_28" file="mug/collision/model_normalized_collision_28.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_29" file="mug/collision/model_normalized_collision_29.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_30" file="mug/collision/model_normalized_collision_30.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_col_31" file="mug/collision/model_normalized_collision_31.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_model_normalized_0_vis" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/visual/model_normalized_0.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_model_normalized_1_vis" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/visual/model_normalized_1.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_0" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_0.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_1" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_1.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_2" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_2.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_3" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_3.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_4" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_4.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_5" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_5.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_6" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_6.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_7" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_7.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_8" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_8.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_9" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_9.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_10" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_10.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_11" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_11.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_12" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_12.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_13" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_13.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_14" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_14.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_15" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_15.obj" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_0_mug_18_model_normalized_0_vis__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/visual/model_normalized_0.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_model_normalized_1_vis__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/visual/model_normalized_1.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_0__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_0.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_1__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_1.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_2__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_2.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_3__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_3.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_4__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_4.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_5__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_5.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_6__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_6.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_7__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_7.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_8__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_8.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_9__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_9.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_10__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_10.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_11__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_11.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_12__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_12.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_13__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_13.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_14__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_14.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_0_mug_18_mug_collision_mesh_15__scaled__mug_1_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_18/collision/collision_mesh_collision_15.obj" scale="0.103849 0.103849 0.103849"/>
+    <mesh name="mug_1_mug_0_model_normalized_0_vis" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/visual/model_normalized_0.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_1_vis" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/visual/model_normalized_1.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_22__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_22.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_23__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_23.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_21__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_21.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_20__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_20.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_24__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_24.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_30__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_30.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_18__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_18.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_19__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_19.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_31__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_31.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_25__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_25.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_27__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_27.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_26__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_26.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_9__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_9.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_8__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_8.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_6__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_6.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_7__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_7.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_5__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_5.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_4__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_4.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_0__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_0.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_1__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_1.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_3__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_3.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_2__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_2.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_17__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_17.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_16__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_16.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_28__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_28.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_14__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_14.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_15__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_15.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_29__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_29.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_11__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_11.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_10__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_10.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_12__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_12.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_13__coll" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_13.obj" refquat="-0.707107 0 0 0.707107" scale="0.105 0.105 0.105"/>
+    <mesh name="mug_1_mug_0_model_normalized_0_vis__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/visual/model_normalized_0.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_1_vis__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/visual/model_normalized_1.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_22__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_22.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_23__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_23.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_21__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_21.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_20__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_20.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_24__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_24.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_30__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_30.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_18__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_18.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_19__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_19.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_31__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_31.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_25__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_25.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_27__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_27.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_26__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_26.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_9__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_9.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_8__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_8.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_6__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_6.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_7__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_7.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_5__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_5.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_4__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_4.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_0__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_0.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_1__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_1.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_3__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_3.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_2__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_2.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_17__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_17.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_16__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_16.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_28__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_28.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_14__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_14.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_15__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_15.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_29__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_29.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_11__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_11.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_10__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_10.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_12__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_12.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_1_mug_0_model_normalized_collision_13__coll__scaled__mug_2_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_0/collision/model_normalized_collision_13.obj" refquat="-0.707107 0 0 0.707107" scale="0.1003 0.1003 0.1003"/>
+    <mesh name="mug_2_mug_5_model_normalized_0_vis" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/visual/model_normalized_0.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_0" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_0.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_1" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_1.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_2" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_2.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_3" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_3.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_4" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_4.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_5" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_5.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_6" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_6.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_7" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_7.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_8" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_8.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_9" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_9.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_10" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_10.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_11" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_11.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_12" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_12.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_13" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_13.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_14" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_14.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_15" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_15.obj" refquat="0 0 0 1" scale="0.11 0.11 0.11"/>
+    <mesh name="mug_2_mug_5_model_normalized_0_vis__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/visual/model_normalized_0.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_0__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_0.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_1__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_1.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_2__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_2.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_3__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_3.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_4__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_4.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_5__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_5.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_6__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_6.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_7__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_7.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_8__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_8.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_9__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_9.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_10__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_10.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_11__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_11.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_12__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_12.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_13__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_13.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_14__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_14.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+    <mesh name="mug_2_mug_5_mug_collision_mesh_15__scaled__mug_3_jnt" content_type="model/obj" file="/home/karimelrafi/yam_sim/yam_sim/models/assets/task_mug_tree/mug/mug_5/collision/collision_mesh_collision_15.obj" refquat="0 0 0 1" scale="0.10949 0.10949 0.10949"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="0 0 0.05" type="plane" contype="0" conaffinity="0" rgba="0.95 0.93 0.96 1"/>
+    <geom name="floor_collision" size="0 0 0.05" type="plane" group="3" rgba="0 0 0 0"/>
+    <geom type="mesh" contype="0" conaffinity="0" group="2" density="0" rgba="0.85 0.85 0.85 1" mesh="base_visual_gate"/>
+    <geom size="0.2975 0.65 0.375" pos="0 0 0.375" type="box" group="3" rgba="1 0 0 0"/>
+    <geom name="back_wall" size="0.005 0.65 1" pos="0.9 0 1" type="box" contype="0" conaffinity="0" group="2" rgba="0.95 0.93 0.96 1"/>
+    <geom name="back_wall_collision" size="0.005 0.65 1" pos="0.9 0 1" type="box" group="3" rgba="0 0 0 0"/>
+    <geom name="left_wall" size="0.45 0.005 1" pos="0.45 0.65 1" type="box" contype="0" conaffinity="0" group="2" rgba="0.95 0.93 0.96 1"/>
+    <geom name="left_wall_collision" size="0.45 0.005 1" pos="0.45 0.65 1" type="box" group="3" rgba="0 0 0 0"/>
+    <geom name="right_wall" size="0.45 0.005 1" pos="0.45 -0.65 1" type="box" contype="0" conaffinity="0" group="2" rgba="0.95 0.93 0.96 1"/>
+    <geom name="right_wall_collision" size="0.45 0.005 1" pos="0.45 -0.65 1" type="box" group="3" rgba="0 0 0 0"/>
+    <geom name="table_plane" size="0.2975 0.65 0.01" pos="0.6 0 0.75" type="plane" group="3" rgba="0 0 0 0"/>
+    <light pos="0 0 1.5" dir="0 0 -1" type="directional" diffuse="0.3 0.3 0.3" specular="0.05 0.05 0.05"/>
+    <body name="gate_collision" pos="0 0 0.75">
+      <geom size="0.015 0.015 0.45" pos="0 0.575 0.45" type="box" group="3" rgba="1 0 0 0"/>
+      <geom size="0.015 0.015 0.45" pos="0 -0.575 0.45" type="box" group="3" rgba="1 0 0 0"/>
+      <geom size="0.015 0.015 0.59" pos="0 0 0.915" quat="0.707107 0.707107 0 0" type="box" group="3" rgba="1 0 0 0"/>
+      <body name="top_bar_center" pos="0 0 0.915">
+        <body name="top_camera_d405" pos="0.0860051 -0.009 0.0393205" quat="0.183012 0.683013 0.683013 0.183012">
+          <geom type="mesh" contype="0" conaffinity="0" group="2" mass="0.001" rgba="0.22 0.22 0.24 1" mesh="camera_d405"/>
+          <body name="top_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+            <camera name="top" pos="0 0 0" quat="0 1 0 0" fovy="58"/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="overhead_camera" pos="0.55 0 1.6">
+      <camera name="overhead" pos="0 0 0" quat="0.707107 0 0 -0.707107" fovy="60"/>
+    </body>
+    <body name="left_side_camera" pos="0.5 0.55 1.05" quat="1.05624e-06 -8.02958e-07 0.605186 0.796084">
+      <camera name="left_side" pos="0 0 0" fovy="70"/>
+    </body>
+    <body name="right_side_camera" pos="0.5 -0.55 1.05" quat="0.796084 0.605186 0 0">
+      <camera name="right_side" pos="0 0 0" fovy="70"/>
+    </body>
+    <body name="play_table">
+      <geom size="0.2975 0.65 0.005" pos="0.6 0 0.745" type="box" contype="0" conaffinity="0" group="2" rgba="0.97 0.97 0.97 1"/>
+    </body>
+    <body name="mug_tree" pos="0.704798 0.041846 0.9" quat="0.706213 0.706215 0.0355253 0.0355252">
+      <geom name="mug_tree_vis" type="mesh" contype="0" conaffinity="0" group="2" mass="1" material="mug_tree_mat" mesh="mug_tree"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_0"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_1"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_2"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_3"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_4"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_5"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_6"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_7"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_8"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_9"/>
+      <geom type="mesh" group="3" rgba="0 0 0 0" mesh="mug_tree_col_10"/>
+    </body>
+    <body name="mug_1" pos="0.6 0.15 0.8">
+      <joint name="mug_1_jnt" type="free"/>
+      <body name="mug_0_mug_18_object">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" friction="0.95 0.3 0.1" solref="0.001" solimp="0.998 0.998" mass="0.05" material="mug_0_mug_18_material_078" mesh="mug_0_mug_18_model_normalized_0_vis__scaled__mug_1_jnt"/>
+        <geom type="mesh" contype="0" conaffinity="0" group="2" friction="0.95 0.3 0.1" solref="0.001" solimp="0.998 0.998" density="0" material="mug_0_mug_18_Mat_002" mesh="mug_0_mug_18_model_normalized_1_vis__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_0__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_1__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_2__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_3__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_4__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_5__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_6__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_7__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_8__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_9__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_10__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_11__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_12__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_13__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_14__scaled__mug_1_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_0_mug_18_mug_collision_mesh_15__scaled__mug_1_jnt"/>
+      </body>
+    </body>
+    <body name="mug_2" pos="0.6 -0.15 0.8">
+      <joint name="mug_2_jnt" type="free"/>
+      <body name="mug_1_mug_0_object">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" friction="0.95 0.3 0.1" solref="0.001" solimp="0.998 0.998" mass="0.05" material="mug_1_mug_0_Mat_1" mesh="mug_1_mug_0_model_normalized_0_vis__scaled__mug_2_jnt"/>
+        <geom type="mesh" contype="0" conaffinity="0" group="2" friction="0.95 0.3 0.1" solref="0.001" solimp="0.998 0.998" density="0" material="mug_1_mug_0_material_047" mesh="mug_1_mug_0_model_normalized_1_vis__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_22__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_23__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_21__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_20__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_24__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_30__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_18__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_19__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_31__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_25__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_27__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_26__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_9__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_8__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_6__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_7__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_5__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_4__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_0__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_1__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_3__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_2__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_17__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_16__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_28__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_14__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_15__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_29__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_11__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_10__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_12__coll__scaled__mug_2_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_1_mug_0_model_normalized_collision_13__coll__scaled__mug_2_jnt"/>
+      </body>
+    </body>
+    <body name="mug_3" pos="0.45 0 0.8">
+      <joint name="mug_3_jnt" type="free"/>
+      <body name="mug_2_mug_5_object">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" friction="0.95 0.3 0.1" solref="0.001" solimp="0.998 0.998" mass="0.05" material="mug_2_mug_5_material_079" mesh="mug_2_mug_5_model_normalized_0_vis__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_0__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_1__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_2__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_3__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_4__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_5__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_6__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_7__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_8__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_9__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_10__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_11__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_12__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_13__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_14__scaled__mug_3_jnt"/>
+        <geom type="mesh" condim="6" group="3" priority="1" friction="3 0.03 0.003" solref="0.004" solimp="0.998 0.998" density="0" rgba="0 0 0 0" mesh="mug_2_mug_5_mug_collision_mesh_15__scaled__mug_3_jnt"/>
+        <site name="mug_2_mug_5_liquid" pos="0 0.0159258 0" size="0.0388192 0.0338424" type="cylinder" rgba="0 0 0 0"/>
+        <site name="mug_2_mug_5_reg_int" pos="0 0.0159258 0.00597219" size="0.0308563 0.0368285" type="cylinder" rgba="0 0 0 0"/>
+      </body>
+    </body>
+    <body name="left_arm" childclass="yam" pos="0.2525 0.31 0.76">
+      <geom class="visual" pos="0 0 -0.0006" quat="0.707107 0 0 0.707107" mesh="model2"/>
+      <geom class="collision" size="0.033 0.01" pos="0 0 0.026"/>
+      <body name="left_link_1" pos="0 0 0.0631" quat="0.707107 0 0 0.707107">
+        <inertial pos="-0.00192861 -0.00795735 0.0208176" quat="0.297851 0.642634 0.360045 0.607185" mass="0.12415" diaginertia="0.000180751 0.000145532 5.89179e-05"/>
+        <joint name="left_joint1" class="dm4340" pos="0 0 0" axis="0 0 1" range="-2.61799 3.05433"/>
+        <geom class="visual" pos="5.26159e-07 2.34355e-07 -0.0632" quat="1 0 0 0" mesh="model2__2"/>
+        <body name="left_link_2" pos="2.5e-05 -0.02 0.0409" quat="0.5 0.5 0.5 0.5" gravcomp="1">
+          <inertial pos="0.132008 2.10599e-06 0.000293073" quat="0.5 0.5 0.5 0.5" mass="1.24434" diaginertia="0.0121902 0.0121318 0.000683304"/>
+          <joint name="left_joint2" class="dm4340" pos="0 0 0" axis="0 0 1" range="0 3.66519"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__3"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__4"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="0.5 -0.5 -0.5 -0.5" material="white" mesh="model2__5"/>
+          <geom class="collision" size="0.032 0.11" pos="0.13 0 0" quat="0.707107 0 0.707107 0"/>
+          <geom class="collision" size="0.033 0.02"/>
+          <geom class="collision" size="0.033 0.025" pos="0.265 0 0"/>
+          <body name="left_link_3" pos="0.264 0 0" quat="0 1 0 0" gravcomp="1">
+            <inertial pos="-0.121816 -0.054846 -0.000111108" quat="0.5 0.5 0.5 0.5" mass="0.853698" diaginertia="0.00699732 0.00696112 0.000788244"/>
+            <joint name="left_joint3" class="dm4340" pos="0 0 0" axis="0 0 1" range="0 3.66519"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__6"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__7"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" material="white" mesh="model2__8"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__9"/>
+            <geom class="collision" size="0.034 0.12" pos="-0.14 -0.06 0" quat="0.707107 0 0.707107 0"/>
+            <geom class="collision" size="0.034 0.015" pos="-0.24 -0.06 0"/>
+            <body name="left_link_4" pos="-0.245 -0.06 0" gravcomp="1">
+              <inertial pos="-0.0769778 -0.0527104 0.000154878" quat="0.66661 0.66661 -0.235862 -0.235862" mass="0.463511" diaginertia="0.000791532 0.000744733 0.000282116"/>
+              <joint name="left_joint4" class="dm4310" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708"/>
+              <geom class="visual" pos="0.00100023 0.164101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__10"/>
+              <geom class="collision" size="0.03 0.015" pos="-0.073 -0.06 0" quat="0.707107 0.707107 0 0"/>
+              <body name="left_link_5" pos="-0.074 -0.0395 2.5e-05" quat="0.5 -0.5 0.5 0.5" gravcomp="1">
+                <inertial pos="3.64861e-05 0.00025665 0.0353526" mass="0.350962" diaginertia="0.000197802 0.0001775 0.000147402"/>
+                <joint name="left_joint5" class="dm4310" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708"/>
+                <geom class="visual" pos="0 -0.0749971 0.203601" quat="1.32679e-06 1 0 0" mesh="model2__11"/>
+                <geom class="collision" size="0.03 0.015" pos="0 0.025 0.0395" quat="0.707107 0.707107 0 0"/>
+                <body name="left_link_6" pos="0 0.0353 0.0395" quat="0.707107 -0.707107 0 0" gravcomp="1">
+                  <inertial pos="-0.000217767 7.37059e-05 0.0270545" quat="0.707107 0.707107 0 0" mass="0.367476" diaginertia="0.000265958 0.000242686 0.000227409"/>
+                  <joint name="left_joint6" class="dm4310" pos="0 0 0" axis="0 0 1" range="-2.0944 2.0944"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="0.707107 -0.707107 0 0" mesh="model2__12"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="0.707107 -0.707107 0 0" mesh="model2__13"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 0.039 0.052" quat="0.707107 0 0.707107 0"/>
+                  <geom class="collision" size="0.03 0.005" pos="0 0 0.03" quat="0.707107 0 0 0.707107"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 -0.039 0.052" quat="0.707107 0 0.707107 0"/>
+                  <site name="left_tcp_site" pos="0 0 0" quat="0.707107 0 0 -0.707107" group="4" rgba="1 0 0 1"/>
+                  <site name="left_grasp_site" pos="0 0 0.1347" quat="0.707107 0 0 -0.707107" group="4" rgba="0 1 0 1"/>
+                  <body name="left_camera_d405" pos="-0.0107 0.095 0.062" quat="0.906106 0.42305 0 0">
+                    <geom type="mesh" contype="0" conaffinity="0" group="2" mass="0.001" rgba="0.22 0.22 0.24 1" mesh="camera_d405"/>
+                    <geom name="left_cam_col" size="0.02" group="3" mass="0.001" rgba="0.1 0.4 1 0.3"/>
+                    <body name="left_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+                      <camera name="left" pos="0 0 0" quat="0 1 0 0" fovy="58"/>
+                    </body>
+                  </body>
+                  <body name="left_link_left_finger" pos="-0.037 0.0392 0.0605" quat="0.707107 0 0.707107 0" gravcomp="1">
+                    <inertial pos="-0.0192995 -0.0365902 0.039774" quat="0.757517 0.569023 -0.31997 0" mass="0.118" diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint name="left_left_finger" class="finger" pos="0 0 0" axis="0 0 1" range="-0.00205 0.0475"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__14"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__15"/>
+                    <body name="left_lf_rot" pos="0 -0.0392 0.037" quat="0.5 -0.5 -0.5 0.5" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0 -0.02 0.012" quat="0.707107 0 0.707107 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="-0.02 -0.01 0.032" quat="0.371391 0 0.928477 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="left_lf_down" pos="-0.044 0 0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0 -0.02 0.012" quat="0.995037 -0.0995037 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.04" pos="0 -0.0024 0.046" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.039" pos="0.027 -0.0024 0.053" quat="0.371391 0 0.928477 0" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                  <body name="left_link_right_finger" pos="0.037 -0.0392 0.0605" quat="0.707107 0 0.707107 0" gravcomp="1">
+                    <inertial pos="-0.0192995 0.0365902 -0.039774" quat="-0.757517 0.569023 -0.31997 0" mass="0.118" diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint name="left_right_finger" class="finger" pos="0 0 0" axis="0 0 1" range="-0.0475 0.00205"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__16"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__17"/>
+                    <body name="left_rf_rot" pos="0 0.0392 -0.037" quat="0.5 0.5 -0.5 -0.5" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0 -0.02 0.012" quat="0.707107 0 0.707107 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="0.02 -0.01 0.032" quat="0.371391 0 -0.928477 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="left_rf_down" pos="0.044 0 0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0 -0.02 0.012" quat="0.995037 -0.0995037 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.04" pos="0 -0.0024 0.046" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.039" pos="-0.027 -0.0024 0.053" quat="0.371391 0 -0.928477 0" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="right_arm" childclass="yam" pos="0.2525 -0.31 0.76">
+      <geom class="visual" pos="0 0 -0.0006" quat="0.707107 0 0 0.707107" mesh="model2"/>
+      <geom class="collision" size="0.033 0.01" pos="0 0 0.026"/>
+      <body name="right_link_1" pos="0 0 0.0631" quat="0.707107 0 0 0.707107">
+        <inertial pos="-0.00192861 -0.00795735 0.0208176" quat="0.297851 0.642634 0.360045 0.607185" mass="0.12415" diaginertia="0.000180751 0.000145532 5.89179e-05"/>
+        <joint name="right_joint1" class="dm4340" pos="0 0 0" axis="0 0 1" range="-2.61799 3.05433"/>
+        <geom class="visual" pos="5.26159e-07 2.34355e-07 -0.0632" quat="1 0 0 0" mesh="model2__2"/>
+        <body name="right_link_2" pos="2.5e-05 -0.02 0.0409" quat="0.5 0.5 0.5 0.5" gravcomp="1">
+          <inertial pos="0.132008 2.10599e-06 0.000293073" quat="0.5 0.5 0.5 0.5" mass="1.24434" diaginertia="0.0121902 0.0121318 0.000683304"/>
+          <joint name="right_joint2" class="dm4340" pos="0 0 0" axis="0 0 1" range="0 3.66519"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__3"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__4"/>
+          <geom class="visual" pos="0.0199992 -0.1041 -2.44738e-05" quat="0.5 -0.5 -0.5 -0.5" material="white" mesh="model2__5"/>
+          <geom class="collision" size="0.032 0.11" pos="0.13 0 0" quat="0.707107 0 0.707107 0"/>
+          <geom class="collision" size="0.033 0.02"/>
+          <geom class="collision" size="0.033 0.025" pos="0.265 0 0"/>
+          <body name="right_link_3" pos="0.264 0 0" quat="0 1 0 0" gravcomp="1">
+            <inertial pos="-0.121816 -0.054846 -0.000111108" quat="0.5 0.5 0.5 0.5" mass="0.853698" diaginertia="0.00699732 0.00696112 0.000788244"/>
+            <joint name="right_joint3" class="dm4340" pos="0 0 0" axis="0 0 1" range="0 3.66519"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__6"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__7"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" material="white" mesh="model2__8"/>
+            <geom class="visual" pos="-0.244001 0.104101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__9"/>
+            <geom class="collision" size="0.034 0.12" pos="-0.14 -0.06 0" quat="0.707107 0 0.707107 0"/>
+            <geom class="collision" size="0.034 0.015" pos="-0.24 -0.06 0"/>
+            <body name="right_link_4" pos="-0.245 -0.06 0" gravcomp="1">
+              <inertial pos="-0.0769778 -0.0527104 0.000154878" quat="0.66661 0.66661 -0.235862 -0.235862" mass="0.463511" diaginertia="0.000791532 0.000744733 0.000282116"/>
+              <joint name="right_joint4" class="dm4310" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708"/>
+              <geom class="visual" pos="0.00100023 0.164101 2.44738e-05" quat="0.5 0.5 0.5 -0.5" mesh="model2__10"/>
+              <geom class="collision" size="0.03 0.015" pos="-0.073 -0.06 0" quat="0.707107 0.707107 0 0"/>
+              <body name="right_link_5" pos="-0.074 -0.0395 2.5e-05" quat="0.5 -0.5 0.5 0.5" gravcomp="1">
+                <inertial pos="3.64861e-05 0.00025665 0.0353526" mass="0.350962" diaginertia="0.000197802 0.0001775 0.000147402"/>
+                <joint name="right_joint5" class="dm4310" pos="0 0 0" axis="0 0 1" range="-1.5708 1.5708"/>
+                <geom class="visual" pos="0 -0.0749971 0.203601" quat="1.32679e-06 1 0 0" mesh="model2__11"/>
+                <geom class="collision" size="0.03 0.015" pos="0 0.025 0.0395" quat="0.707107 0.707107 0 0"/>
+                <body name="right_link_6" pos="0 0.0353 0.0395" quat="0.707107 -0.707107 0 0" gravcomp="1">
+                  <inertial pos="-0.000217767 7.37059e-05 0.0270545" quat="0.707107 0.707107 0 0" mass="0.367476" diaginertia="0.000265958 0.000242686 0.000227409"/>
+                  <joint name="right_joint6" class="dm4310" pos="0 0 0" axis="0 0 1" range="-2.0944 2.0944"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="0.707107 -0.707107 0 0" mesh="model2__12"/>
+                  <geom class="visual" pos="0 -0.164101 -0.110597" quat="0.707107 -0.707107 0 0" mesh="model2__13"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 0.039 0.052" quat="0.707107 0 0.707107 0"/>
+                  <geom class="collision" size="0.03 0.005" pos="0 0 0.03" quat="0.707107 0 0 0.707107"/>
+                  <geom class="collision" size="0.01 0.035" pos="0 -0.039 0.052" quat="0.707107 0 0.707107 0"/>
+                  <site name="right_tcp_site" pos="0 0 0" quat="0.707107 0 0 -0.707107" group="4" rgba="1 0 0 1"/>
+                  <site name="right_grasp_site" pos="0 0 0.1347" quat="0.707107 0 0 -0.707107" group="4" rgba="0 1 0 1"/>
+                  <body name="right_camera_d405" pos="-0.0107 0.095 0.062" quat="0.906106 0.42305 0 0">
+                    <geom type="mesh" contype="0" conaffinity="0" group="2" mass="0.001" rgba="0.22 0.22 0.24 1" mesh="camera_d405"/>
+                    <geom name="right_cam_col" size="0.02" group="3" mass="0.001" rgba="0.1 0.4 1 0.3"/>
+                    <body name="right_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+                      <camera name="right" pos="0 0 0" quat="0 1 0 0" fovy="58"/>
+                    </body>
+                  </body>
+                  <body name="right_link_left_finger" pos="-0.037 0.0392 0.0605" quat="0.707107 0 0.707107 0" gravcomp="1">
+                    <inertial pos="-0.0192995 -0.0365902 0.039774" quat="0.757517 0.569023 -0.31997 0" mass="0.118" diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint name="right_left_finger" class="finger" pos="0 0 0" axis="0 0 1" range="-0.00205 0.0475"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__14"/>
+                    <geom class="visual" pos="0.171097 -0.203301 0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__15"/>
+                    <body name="right_lf_rot" pos="0 -0.0392 0.037" quat="0.5 -0.5 -0.5 0.5" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0 -0.02 0.012" quat="0.707107 0 0.707107 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="-0.02 -0.01 0.032" quat="0.371391 0 0.928477 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="right_lf_down" pos="-0.044 0 0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0 -0.02 0.012" quat="0.995037 -0.0995037 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.04" pos="0 -0.0024 0.046" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.039" pos="0.027 -0.0024 0.053" quat="0.371391 0 0.928477 0" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                  <body name="right_link_right_finger" pos="0.037 -0.0392 0.0605" quat="0.707107 0 0.707107 0" gravcomp="1">
+                    <inertial pos="-0.0192995 0.0365902 -0.039774" quat="-0.757517 0.569023 -0.31997 0" mass="0.118" diaginertia="0.000159084 0.000154909 4.63655e-05"/>
+                    <joint name="right_right_finger" class="finger" pos="0 0 0" axis="0 0 1" range="-0.0475 0.00205"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__16"/>
+                    <geom class="visual" pos="0.171097 -0.124901 -0.037" quat="0.5 -0.5 -0.5 -0.5" mesh="model2__17"/>
+                    <body name="right_rf_rot" pos="0 0.0392 -0.037" quat="0.5 0.5 -0.5 -0.5" gravcomp="1">
+                      <geom class="collision" size="0.01 0.03" pos="0 -0.02 0.012" quat="0.707107 0 0.707107 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <geom class="collision" size="0.01 0.02" pos="0.02 -0.01 0.032" quat="0.371391 0 -0.928477 0" rgba="0.381493 0.492734 0.780446 1"/>
+                      <body name="right_rf_down" pos="0.044 0 0" gravcomp="1">
+                        <geom class="collision" size="0.01 0.01" pos="0 -0.02 0.012" quat="0.995037 -0.0995037 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.003 0.022" pos="-0.005 -0.014 0.04" quat="0.980581 -0.196116 0 0" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.04" pos="0 -0.0024 0.046" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="collision" size="0.006 0.002 0.039" pos="-0.027 -0.0024 0.053" quat="0.371391 0 -0.928477 0" type="box" priority="2" friction="4" solref="0.004" solimp="0.998 0.998" rgba="0.381493 0.492734 0.780446 1"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.078"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.07"/>
+                        <geom class="sphere_collision" pos="0.003 -0.0004 0.06"/>
+                        <geom class="sphere_collision" pos="-0.003 -0.0004 0.06"/>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <equality>
+    <joint joint1="left_left_finger" joint2="left_right_finger" polycoef="0 -1 0 0 0"/>
+    <joint joint1="right_left_finger" joint2="right_right_finger" polycoef="0 -1 0 0 0"/>
+  </equality>
+
+  <actuator>
+    <general name="left_joint1" class="dm4340" joint="left_joint1" ctrlrange="-2.61799 3.05433"/>
+    <general name="left_joint2" class="dm4340" joint="left_joint2" ctrlrange="0 3.66519"/>
+    <general name="left_joint3" class="dm4340" joint="left_joint3" ctrlrange="0 3.66519"/>
+    <general name="left_joint4" class="dm4310" joint="left_joint4" ctrlrange="-1.5708 1.5708" gainprm="20" biasprm="0 -20 -0.5"/>
+    <general name="left_joint5" class="dm4310" joint="left_joint5" ctrlrange="-1.5708 1.5708"/>
+    <general name="left_joint6" class="dm4310" joint="left_joint6" ctrlrange="-2.0944 2.0944"/>
+    <general name="left_gripper" class="finger" joint="left_left_finger"/>
+    <general name="right_joint1" class="dm4340" joint="right_joint1" ctrlrange="-2.61799 3.05433"/>
+    <general name="right_joint2" class="dm4340" joint="right_joint2" ctrlrange="0 3.66519"/>
+    <general name="right_joint3" class="dm4340" joint="right_joint3" ctrlrange="0 3.66519"/>
+    <general name="right_joint4" class="dm4310" joint="right_joint4" ctrlrange="-1.5708 1.5708" gainprm="20" biasprm="0 -20 -0.5"/>
+    <general name="right_joint5" class="dm4310" joint="right_joint5" ctrlrange="-1.5708 1.5708"/>
+    <general name="right_joint6" class="dm4310" joint="right_joint6" ctrlrange="-2.0944 2.0944"/>
+    <general name="right_gripper" class="finger" joint="right_left_finger"/>
+  </actuator>
+
+  <keyframe>
+    <key name="home" qpos="0.6 0.15 0.8 1 0 0 0 0.6 -0.15 0.8 1 0 0 0 0.45 0 0.8 1 0 0 0 0 1.047 1.047 0 0 0 0 0 0 1.047 1.047 0 0 0 0 0" ctrl="0 1.047 1.047 0 0 0 0 0 1.047 1.047 0 0 0 0"/>
+  </keyframe>
+</mujoco>

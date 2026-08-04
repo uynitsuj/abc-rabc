@@ -1,0 +1,49 @@
+# Example eval job matrix for yam-sim policy evaluation.
+#
+# Start one openpi websocket server per checkpoint first (openpi
+# scripts/serve_policy.py), each on its own port, then run:
+#
+#   MUJOCO_GL=egl python -m yam_sim.examples.run_eval \
+#       --config yam_sim/examples/eval_config.example.yaml
+#
+# Results land under output_dir:
+#   <output_dir>/<model_label>/<task>/seed_<n>.mp4         one video per episode
+#   <output_dir>/<model_label>/<task>/seed_<n>_actions.npy executed actions
+#   <output_dir>/results.jsonl                             one line per episode (resumable)
+#   <output_dir>/summary.json, summary.csv                 aggregated success rates
+
+output_dir: /tmp/yam_eval
+
+# Each model is a running openpi server hosting one checkpoint.
+models:
+  - label: base
+    host: 0.0.0.0
+    port: 8000
+  - label: finetuned
+    host: 0.0.0.0
+    port: 8001
+
+# Tasks to evaluate. `episodes`/`num_worlds`/`max_chunks` are optional per-task
+# overrides; otherwise the *_default / spec values below are used.
+# NOTE: automated success scoring currently exists only for `bottles` and `sweep`.
+# Other tasks roll out and record video, but report success as null.
+tasks:
+  - task: bottles
+    episodes: 20
+    num_worlds: 5
+  - task: sweep
+    episodes: 20
+    num_worlds: 5
+
+# Global defaults and rollout settings.
+episodes_default: 10
+num_worlds_default: 4
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+jpeg_quality: 0
+fps: 30
+video: true
+seed_base: 0
+# camera_gpu_id: 0
