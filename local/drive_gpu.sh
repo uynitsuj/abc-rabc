@@ -10,7 +10,7 @@ set -uo pipefail
 ROOT=/home/karimelrafi/abc-rabc
 # Scratch root. /scratch/current is a MONTHLY-ROTATING symlink; after a month
 # rollover it points at an empty new month. Override to the month holding the data:
-#   ABC_SCRATCH=/scratch/2026_06/karimelrafi bash local/drive_gpu.sh
+#   ABC_SCRATCH=/scratch/<older_month>/karimelrafi bash local/drive_gpu.sh
 # Exported so run_arm.sh / convert_task.sh inherit the same root.
 export ABC_SCRATCH="${ABC_SCRATCH:-/scratch/current/karimelrafi}"
 RUNS="$ABC_SCRATCH/abc_cache/runs"

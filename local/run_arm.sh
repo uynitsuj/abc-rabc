@@ -21,7 +21,7 @@ ROOT=/home/karimelrafi/abc-rabc
 # Scratch root. /scratch/current is a MONTHLY-ROTATING symlink (flips 2026_MM at
 # month start); after a rollover it points at a fresh empty month, so override
 # ABC_SCRATCH to the month that actually holds the data, e.g.
-#   ABC_SCRATCH=/scratch/2026_06/karimelrafi bash local/run_arm.sh ...
+#   ABC_SCRATCH=/scratch/<older_month>/karimelrafi bash local/run_arm.sh ...
 SCRATCH="${ABC_SCRATCH:-/scratch/current/karimelrafi}"
 DATA="$SCRATCH/abc_cache/$TASK_KEY"
 SHARED="$SCRATCH/abc_cache/_shared"

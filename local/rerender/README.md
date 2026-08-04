@@ -20,7 +20,7 @@ eval-faithful render; matches mjgl within ~3.5/255).
 
 ## Data locations
 
-- raw deliveries (source): `/scratch/2026_05/karimelrafi/sim_archive_20260529/mcap/<task>/episode_<uuid>/`
+- raw deliveries (source): `/scratch/current/karimelrafi/sim_archive_20260529/mcap/<task>/episode_<uuid>/` (moved out of `2026_05` on 2026-08-04; hop it forward when scratch months rotate)
 - re-rendered 30 Hz mcaps: `/scratch/current/karimelrafi/rerender_mcap_30hz/<task>/<episode>/output.mcap`
 - LeRobot v3 datasets: `/scratch/current/karimelrafi/rerender_lerobot_30hz/<task>/` (symlinked into `~/datasets/` for the repromo webui)
 - scratch preview/cache artifacts (not in repo): `~/rerender_demos/`

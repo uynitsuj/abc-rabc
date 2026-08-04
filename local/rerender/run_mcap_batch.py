@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 RD = str(Path(__file__).resolve().parent)
-ARCH = "/scratch/2026_05/karimelrafi/sim_archive_20260529/mcap"
+ARCH = "/scratch/current/karimelrafi/sim_archive_20260529/mcap"
 YAM = "/home/karimelrafi/yam_sim/.venv/bin/python"
 ABC = "/home/karimelrafi/abc-rabc/.venv/bin/python"
 NORMALIZE = f"{RD}/normalize_scene.py"

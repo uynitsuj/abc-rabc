@@ -10,7 +10,7 @@ WORKERS="${WORKERS:-48}"; VALCOUNT="${VALCOUNT:-50}"
 SIM_TASK="${DIRNAME%_30hz_gop10}"
 ROOT=/home/karimelrafi/abc-rabc
 # Scratch root; /scratch/current is a monthly-rotating symlink — override ABC_SCRATCH
-# (e.g. /scratch/2026_06/karimelrafi) after a month rollover so paths resolve to data.
+# (e.g. /scratch/<older_month>/karimelrafi) after a month rollover so paths resolve to data.
 SCRATCH="${ABC_SCRATCH:-/scratch/current/karimelrafi}"
 SRC="$SCRATCH/lerobot_mjgl_30hz_full/$DIRNAME"
 OUT="$SCRATCH/abc_cache/$TASK_KEY"
