@@ -1,0 +1,20 @@
+{
+  "dish_rack": {
+    "current": "dish_rack_0",
+    "DishRack026": "dish_rack_1",
+    "DishRack027": "dish_rack_2",
+    "DishRack028": "dish_rack_3",
+    "DishRack030": "dish_rack_4",
+    "DishRack038": "dish_rack_5",
+    "DishRack039": "dish_rack_6",
+    "DishRack040": "dish_rack_7",
+    "DishRack041": "dish_rack_8",
+    "DishRack043": "dish_rack_9",
+    "DishRack044": "dish_rack_10",
+    "DishRack047": "dish_rack_11",
+    "DishRack050": "dish_rack_12"
+  },
+  "plate": {
+    "current": "plate_0"
+  }
+}
