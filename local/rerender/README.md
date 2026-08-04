@@ -61,6 +61,11 @@ affects pixels.
 ./start_viewer.sh                    # side-by-side mp4 viewer :8777
 ./start_repromo_webui.sh             # repromo webui :8778 (reads ~/datasets symlinks)
 python mcap_to_mp4.py --mcap <output.mcap> --out-dir <dir>   # extract cameras
+
+# 4. per-episode object counts (for WARP-RM stratified shortest-N% training)
+python make_object_counts.py         # -> <task>/meta/object_counts.json, from
+                                     #    archive randomization.json metadata;
+                                     #    feed to train.py --object-counts-json
 ```
 
 Drop-in mcap format: camera topics replaced with re-rendered 30 Hz
