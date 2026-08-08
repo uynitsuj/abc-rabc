@@ -3711,10 +3711,24 @@ class SweepRandomizer(SceneRandomizer):
         return [joint_name for joint_name in self._all_trash_joints if joint_name not in active]
 
     def _inactive_trash_states(self) -> dict[str, dict[str, list[float]]]:
+        # Park unused scrap slots RESTING ON the (infinite) table plane, well off
+        # to the side. The old z=-1 parking spot sat ~2 m below the plane, which
+        # generates plane<->scrap contacts with meter-scale penetration on every
+        # reset: MuJoCo shrugs these off, but mjwarp's solver NaNs the whole
+        # batch from them (whether a world survived depended on which contacts
+        # the too-small nconmax happened to drop).
+        park_z = 0.02
+        if self._env_ref is not None:
+            import mujoco as _mujoco
+
+            m = self._env_ref.model
+            gid = _mujoco.mj_name2id(m, _mujoco.mjtObj.mjOBJ_GEOM, "table_plane")
+            if gid >= 0:
+                park_z = float(m.geom_pos[gid, 2]) + 0.02
         states: dict[str, dict[str, list[float]]] = {}
         for index, joint_name in enumerate(self._inactive_trash_joints()):
             states[joint_name] = {
-                "pos": [-1.5 - 0.1 * index, 0.0, -1.0 - 0.1 * index],
+                "pos": [-1.5 - 0.1 * index, 0.0, park_z],
                 "quat": [1.0, 0.0, 0.0, 0.0],
             }
         return states

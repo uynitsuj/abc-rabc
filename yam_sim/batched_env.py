@@ -75,8 +75,13 @@ class BatchedWarpYAMEnv:
             self.data,
             nworld=num_worlds,
             gpu_id=camera_gpu_id,
-            nconmax=max(512, int(getattr(self.model, "nconmax", 64)) * num_worlds * 16),
-            njmax=max(4096, int(getattr(self.model, "njmax", 128)) * num_worlds * 64),
+            # MuJoCo 3.x models report nconmax/njmax as 0 (unset), so the
+            # multiplier terms collapse and the FLOOR is the real allocation.
+            # 512 was too small for sweep (needs ~540 with 4 scraps x 5 worlds):
+            # mjwarp's narrowphase silently drops overflowing contacts, letting
+            # objects interpenetrate until the solver NaNs the whole batch.
+            nconmax=max(4096, int(getattr(self.model, "nconmax", 64)) * num_worlds * 16),
+            njmax=max(16384, int(getattr(self.model, "njmax", 128)) * num_worlds * 64),
         )
         # Camera rendering. The mjwarp/madrona path renders all worlds on-GPU in a
         # single batched call (fast, but its images differ from the MuJoCo-GL
@@ -116,6 +121,7 @@ class BatchedWarpYAMEnv:
         self._episode_index = 0
         self._world_reset_info: list[WorldResetInfo] = []
         self._warned_layout_mismatch = False
+        self._warned_geom_drift = False
 
         # Variable object-count masking (see make_batched_env). The warp model is
         # built once at MAX object count; per world we remap the natural K-object
@@ -256,17 +262,44 @@ class BatchedWarpYAMEnv:
             world_options = options
             if self._fixed_reset_options is not None:
                 world_options = {"randomization": dict(self._fixed_reset_options)}
+            else:
+                # Per-world SCALE DR cannot be represented by the shared warp/
+                # render model: a scale reload keeps nq/nv (slipping the layout
+                # guard below) but changes geometry, so poses sampled on the
+                # rescaled scene penetrate the construction-scale geometry and
+                # blow up the solver (NaN qpos -> invisible arms, skybox
+                # cameras). Default it off for per-world resets unless the
+                # caller explicitly opted in.
+                rand = (world_options or {}).get("randomization")
+                if rand is None or isinstance(rand, dict):
+                    rand = dict(rand or {})
+                    rand.setdefault("randomize_scales", False)
+                    world_options = {**(world_options or {}), "randomization": rand}
             self.base_env.reset(seed=world_seed, options=world_options, randomize=randomize)
             # The randomizer may have rebound base_env.model/.data via a scene
             # reload. The warp runtime is built once from the construction-time
             # model, so we can only feed it a per-world state whose layout still
-            # matches (pose/scale DR keep nq/nv fixed). If a reload changed the
+            # matches (pose DR keeps nq/nv fixed). If a reload changed the
             # layout (variant/count DR -- which a single shared warp model
             # cannot represent anyway) fall back to the construction buffer so
             # we never load a mismatched qpos into warp.
             live_model = self.base_env.model
             live_data = self.base_env.data
             if int(live_model.nq) == warp_nq and int(live_model.nv) == warp_nv:
+                if live_model is not self.model and not self._warned_geom_drift:
+                    warp_sizes = np.asarray(self._runtime.mjm.geom_size)
+                    live_sizes = np.asarray(live_model.geom_size)
+                    if warp_sizes.shape != live_sizes.shape or not np.allclose(
+                        warp_sizes, live_sizes
+                    ):
+                        logger.warning(
+                            "%s: per-world scene reload kept nq/nv but changed "
+                            "geometry (e.g. same-layout variant/scale swap); the "
+                            "shared warp model cannot represent it -- physics/"
+                            "rendering may mismatch this world's sampled state",
+                            type(self).__name__,
+                        )
+                        self._warned_geom_drift = True
                 snapshots.append(self._snapshot_cpu_state(live_data, live_model))
             else:
                 if not self._warned_layout_mismatch:
