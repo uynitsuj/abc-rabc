@@ -453,8 +453,14 @@ def make_batched_env(
             con = {"randomize_variants": False, "randomize_scales": False}
         if force_object_count is not None:
             k = int(force_object_count)
-            con.update({"bottle_count": k, "plate_count": k, "mug_count": k})
+            con.update({"bottle_count": k, "plate_count": k, "mug_count": k, "trash_count": k})
         fixed_reset_options = {"randomize_variants": False, "randomize_scales": False}
+        if force_object_count is not None:
+            # Sweep's scrap count is mask-based (constant nq) and re-resolved on every
+            # per-world reset, so randomize_variants=False alone does NOT freeze it --
+            # pin it in the per-world request too. Other tasks' reset requests ignore
+            # trash_count.
+            fixed_reset_options["trash_count"] = int(force_object_count)
         base_env.reset(seed=con_seed, options={"randomization": con}, randomize=True)
         if task == "mug_flip":
             # mug_flip places its mugs RELATIVE to the tray. If the tray is a MOCAP body

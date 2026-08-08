@@ -1,0 +1,11 @@
+# turn_mug canonical eval: object count pinned at 3
+camera_gpu_id: 0
+force_object_count: 3
+video: false
+save_states: true
+tasks:
+  - task: turn_mug_right_side_up
+    prompt: "Turn the mug right side up"
+    episodes: 20
+    num_worlds: 20
+    max_seconds: 130

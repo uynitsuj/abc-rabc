@@ -1,0 +1,11 @@
+# put_bottles canonical eval: object count pinned at 6
+camera_gpu_id: 0
+force_object_count: 6
+video: false
+save_states: true
+tasks:
+  - task: put_bottles
+    prompt: "Put the plastic bottles in the bin"
+    episodes: 20
+    num_worlds: 20
+    max_seconds: 128
