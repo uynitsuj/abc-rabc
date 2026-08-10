@@ -531,7 +531,12 @@ def run_eval(config: EvalConfig) -> dict[str, Any]:
         print(f"Model '{model.label}' @ {model.host}:{model.port}")
         from yam_sim.policy.openpi_policy import OpenPIPolicy
 
-        policy = OpenPIPolicy(host=model.host, port=model.port, api_key=model.api_key)
+        policy = OpenPIPolicy(
+            host=model.host,
+            port=model.port,
+            api_key=model.api_key,
+            use_batch_infer=config.batched_inference,
+        )
         for entry in config.tasks:
             _run_task_for_model(config, model, entry, policy, results_path, done)
 

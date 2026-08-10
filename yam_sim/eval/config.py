@@ -141,6 +141,12 @@ class EvalConfig:
     # past its success moment. Big wall-clock win for tasks that finish early;
     # off by default to preserve the canonical fixed-horizon behavior.
     early_stop_on_success: bool = False
+    # Send all active worlds' observations in ONE batched request per chunk
+    # (one batched pi0 forward) instead of sequential per-world calls. Requires
+    # the openpi server to support infer_batch (openpi branch
+    # karim/batched-inference). Batched sampling draws RNG differently than
+    # sequential, so results are not bit-identical across the two modes.
+    batched_inference: bool = False
     # When failure injection is active: number of ADDITIONAL attempts to re-run
     # a seed whose injection did not produce a verified drop (slip_outcome
     # accidental_bin / not_released). Failed-injection attempts are not

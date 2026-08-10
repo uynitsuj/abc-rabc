@@ -35,12 +35,19 @@ class OpenPIPolicy:
         api_key: Optional[str] = None,
         action_dim: int = 14,
         chunk_len: Optional[int] = None,
+        use_batch_infer: bool = False,
     ) -> None:
         from openpi_client.websocket_client_policy import WebsocketClientPolicy
 
         self._client = WebsocketClientPolicy(host=host, port=port, api_key=api_key)
         self.action_dim = action_dim
         self.chunk_len = chunk_len  # filled in lazily on first inference if None
+        # Batched inference: send all worlds in one request (requires a
+        # batch-aware openpi server, see Policy.infer_batch). Requests are
+        # padded up to the largest batch seen so far so the server's jitted
+        # model compiles for ONE batch shape instead of one per active count.
+        self.use_batch_infer = use_batch_infer
+        self._batch_pad = 0
 
     def set_task(self, task: Optional[str]) -> None:
         """No-op; the prompt is sent inside ``infer`` per call."""
@@ -76,7 +83,7 @@ class OpenPIPolicy:
         prompts = self._prompts(obs.get("prompt"), batch_size)
         per_world_images = self._split_images(obs.get("images", {}), batch_size)
 
-        action_chunks: list[np.ndarray] = []
+        samples: list[dict] = []
         for i in range(batch_size):
             sample = {
                 "state": state_batch[i].astype(np.float32),
@@ -85,12 +92,22 @@ class OpenPIPolicy:
             for yam_key, openpi_key in _YAM_SIM_TO_OPENPI_CAM.items():
                 if yam_key in per_world_images:
                     sample[openpi_key] = per_world_images[yam_key][i]
+            samples.append(sample)
 
-            response = self._client.infer(sample)
-            actions = np.asarray(response["actions"], dtype=np.float32)
-            # openpi YamOutputs already trims to first 14 dims.
-            actions = actions[:, : self.action_dim]
-            action_chunks.append(actions)
+        action_chunks: list[np.ndarray] = []
+        if self.use_batch_infer and batch_size > 1:
+            self._batch_pad = max(self._batch_pad, batch_size)
+            padded = samples + [samples[-1]] * (self._batch_pad - batch_size)
+            responses = self._client.infer_batch(padded)[:batch_size]
+            for response in responses:
+                actions = np.asarray(response["actions"], dtype=np.float32)
+                action_chunks.append(actions[:, : self.action_dim])
+        else:
+            for sample in samples:
+                response = self._client.infer(sample)
+                actions = np.asarray(response["actions"], dtype=np.float32)
+                # openpi YamOutputs already trims to first 14 dims.
+                action_chunks.append(actions[:, : self.action_dim])
 
         stacked = np.stack(action_chunks, axis=0)  # (B, T, 14)
         if self.chunk_len is None:
