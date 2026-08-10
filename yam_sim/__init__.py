@@ -326,6 +326,28 @@ def make_env(
     return env
 
 
+def _stabilize_bin_model(model, *, mass_kg: float = 3.0, damping: float = 5.0) -> None:
+    """Weight and damp the free-jointed bin so arm bumps don't knock it over.
+
+    Mutates the (construction) model in place: sets ``bin_container``'s body
+    mass, scales its inertia to match, and applies viscous damping to the
+    ``bin_joint`` free-joint DOFs. Must run before the warp model is compiled.
+    """
+    import mujoco
+
+    body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "bin_container")
+    joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "bin_joint")
+    if body_id < 0 or joint_id < 0:
+        raise ValueError("bin_stabilize requires bin_container/bin_joint in the scene")
+    old_mass = float(model.body_mass[body_id])
+    if old_mass <= 0:
+        raise ValueError(f"bin_container has non-positive mass {old_mass}")
+    model.body_mass[body_id] = float(mass_kg)
+    model.body_inertia[body_id] *= float(mass_kg) / old_mass
+    dof_adr = int(model.jnt_dofadr[joint_id])
+    model.dof_damping[dof_adr : dof_adr + 6] = float(damping)
+
+
 def make_batched_env(
     scene: str = "hybrid",
     task: str = "bottles",
@@ -340,6 +362,8 @@ def make_batched_env(
     force_object_count: int | None = None,
     visual_seed: int | None = None,
     mug_inline: bool = False,
+    extra_reset_options: dict | None = None,
+    bin_stabilize: dict | None = None,
     **kwargs,
 ):
     """Create a batched Warp-based YAM environment for GPU rollout.
@@ -363,6 +387,18 @@ def make_batched_env(
     the scene via qpos (the trick the sweep task uses); evaluators then score only
     the non-parked (active) objects via a z-height threshold. Variant/scale are
     fixed-per-batch in both modes (a shared-model limit).
+
+    ``extra_reset_options`` are merged into every randomization request (both the
+    construction reset and each per-world reset), letting callers pass
+    task-specific reset controls straight to the randomizer, e.g.
+    ``{"bottle_spawn": "opposite_bin"}`` for put_bottles. Keys set by the batching
+    modes below (count pinning, variant/scale freezing) take precedence.
+
+    ``bin_stabilize`` (put_bottles-style scenes) patches the construction model so
+    the free-jointed bin resists being knocked over by arm contact: e.g.
+    ``{"mass_kg": 3.0, "damping": 5.0}`` sets the ``bin_container`` body mass
+    (inertia scaled to match) and damps its free-joint DOFs. The bin's per-world
+    pose randomization is untouched. Applied before the warp model is built.
 
     ``visual_seed`` enables one deterministic VISUAL config (mesh variant + scale +
     color) for the whole batch: the construction reset is seeded by ``visual_seed``
@@ -461,6 +497,8 @@ def make_batched_env(
             # pin it in the per-world request too. Other tasks' reset requests ignore
             # trash_count.
             fixed_reset_options["trash_count"] = int(force_object_count)
+        if extra_reset_options:
+            con = {**extra_reset_options, **con}
         base_env.reset(seed=con_seed, options={"randomization": con}, randomize=True)
         if task == "mug_flip":
             # mug_flip places its mugs RELATIVE to the tray. If the tray is a MOCAP body
@@ -485,6 +523,15 @@ def make_batched_env(
                 "metadata": dict(getattr(rs, "metadata", {}) or {}),
                 "scale_states": dict(getattr(rs, "scale_states", {}) or {}),
             }
+
+    if extra_reset_options:
+        if mask_variable_count:
+            mask_reset_options = {**extra_reset_options, **(mask_reset_options or {})}
+        else:
+            fixed_reset_options = {**extra_reset_options, **(fixed_reset_options or {})}
+
+    if bin_stabilize:
+        _stabilize_bin_model(base_env.model, **bin_stabilize)
 
     return BatchedWarpYAMEnv(
         base_env,

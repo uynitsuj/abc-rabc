@@ -142,9 +142,18 @@ class BatchedWarpYAMEnv:
             self._max_joint_layout = self._build_joint_layout(self.model)
             self._max_nominal_qpos = np.asarray(self.data.qpos, dtype=np.float32).copy()
 
-    def _world_seed(self, *, base_seed: int | None, world_index: int) -> int | None:
+    def _world_seed(self, *, base_seed, world_index: int) -> int | None:
+        """Per-world seed: ``base + index`` for an int base, or an explicit
+        per-world list/tuple (length ``num_worlds``) for non-contiguous batches
+        (e.g. the harness's injection-retry rounds)."""
         if base_seed is None:
             return None
+        if isinstance(base_seed, (list, tuple, np.ndarray)):
+            if len(base_seed) != self.num_worlds:
+                raise ValueError(
+                    f"Seed list length {len(base_seed)} != num_worlds {self.num_worlds}"
+                )
+            return int(base_seed[world_index])
         return int(base_seed) + world_index
 
     @staticmethod

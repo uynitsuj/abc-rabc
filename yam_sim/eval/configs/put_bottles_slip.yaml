@@ -1,0 +1,28 @@
+# put_bottles grasp-slip recovery eval: ONE bottle, spawned on the opposite
+# table half (in y) from the bin, so every episode is a single long carry. The
+# first time the bottle is carried within 10 cm of the bin footprint, the
+# holding gripper is forced open for 0.5 s. Per-episode slip_* metrics
+# (results.jsonl) record trigger time, verified-drop outcome, time-to-rebin,
+# and roll-off-table events. Run the same config minus failure_injection on
+# the same seeds as the unperturbed control.
+camera_gpu_id: 0
+force_object_count: 1
+reset_options:
+  bottle_spawn: opposite_bin
+video: false
+save_states: true
+early_stop_on_success: true
+bin_stabilize:
+  mass_kg: 3.0
+  damping: 5.0
+failure_injection:
+  type: grasp_slip
+  trigger: bin_proximity
+  bin_edge_distance_m: 0.25
+  open_window_s: 0.5
+tasks:
+  - task: put_bottles
+    prompt: "Put the plastic bottles in the bin"
+    episodes: 20
+    num_worlds: 20
+    max_seconds: 90
