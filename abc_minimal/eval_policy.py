@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import json
+import os
 import math
 import re
 import subprocess
@@ -296,6 +297,13 @@ class MJWarpSim:
     def qpos(self) -> np.ndarray:
         return self.d_warp.qpos.numpy()[0].copy()
 
+    def qvel(self) -> np.ndarray:
+        return self.d_warp.qvel.numpy()[0].copy()
+
+    def write_state(self, qpos: np.ndarray, qvel: np.ndarray) -> None:
+        self._copy(self.d_warp.qpos, np.asarray(qpos, dtype=np.float32)[None], self.wp.float32)
+        self._copy(self.d_warp.qvel, np.asarray(qvel, dtype=np.float32)[None], self.wp.float32)
+
     def set_ctrl(self, ctrl: np.ndarray) -> None:
         ctrl = np.asarray(ctrl, dtype=np.float32)
         if ctrl.shape != (self.model.nu,):
@@ -345,6 +353,8 @@ class PutBottlesEnv:
         self.ctrl_indices: list[int] = []
         self.gripper_state_indices: set[int] = set()
         self.randomization = None
+        self._despawn_n = int(os.environ.get("ABC_DESPAWN_FIRST_N", "0"))
+        self.despawner = None
 
     def close(self) -> None:
         if self.sim is not None:
@@ -410,6 +420,9 @@ class PutBottlesEnv:
         self.sim.load_state()
         self.sim.forward()
         self.evaluator.reset()
+        if self._despawn_n:
+            from abc_minimal.despawn import Despawner
+            self.despawner = Despawner(self.model, self.evaluator.bottle_qpos_addrs, self._despawn_n)
         self.randomization = Randomization(
             seed=seed,
             bottle_states=bottle_states,
@@ -466,7 +479,13 @@ class PutBottlesEnv:
         self.sim.step(self.control_decimation)
 
     def evaluate(self) -> dict[str, Any]:
-        return self.evaluator.evaluate(self.sim.qpos())
+        q = self.sim.qpos()
+        res = self.evaluator.evaluate(q)
+        if self.despawner is not None:
+            qv = self.sim.qvel()
+            if self.despawner.apply(q, qv, self.evaluator._placed_ever, self.evaluator._placed_step):
+                self.sim.write_state(q, qv)
+        return res
 
     def step_one_vanilla(self, action: np.ndarray) -> None:
         self.data.ctrl[:] = self.action_to_ctrl(action)
@@ -958,6 +977,7 @@ def run_eval(config: SimEvalConfig) -> dict[str, Any]:
                 "reward": float(final_eval["reward"]),
                 "steps": steps,
                 "wall_s": time.perf_counter() - t0,
+                "despawn": (env.despawner.stats() if getattr(env, "despawner", None) else None),
                 "chunk_metrics": chunk_metrics,
                 "randomization": env.randomization,
                 "final_task_eval": final_eval,
