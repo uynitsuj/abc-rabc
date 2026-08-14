@@ -1,0 +1,12 @@
+output_dir: /ephemeral/eval/hang_mug_v2_pair/vanilla
+camera_gpu_id: 0
+force_object_count: 3
+video: false
+save_states: true
+seed_base: 0
+tasks:
+  - task: hang_mug_on_mug_rack
+    prompt: "0"
+    episodes: 128
+    num_worlds: 128
+    max_seconds: 183

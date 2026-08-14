@@ -1,0 +1,30 @@
+# Paired RABC-vs-vanilla eval on the sweep task (scored by sweep_away).
+#
+# The prompt is overridden to match EXACTLY what both checkpoints saw in
+# training: the mjwarp310 dataset's task string carries a "sim_" prefix glued
+# onto "sweep" ("sim_sweep away paper scraps from the table") and training used
+# prompt_from_task=True, so the policies were conditioned on that string.
+#
+# Both models run the same seed range (seed_base 0, 128 episodes) in one
+# harness invocation -> episode-level paired comparison.
+#
+#   MUJOCO_GL=egl python -m yam_sim.examples.run_eval \
+#       --config yam_sim/eval/configs/sweep_rabc_pair.yaml \
+#       --models rabc=0.0.0.0:8000,vanilla=0.0.0.0:8001
+
+output_dir: /ephemeral/eval/sweep_rabc_pair
+
+tasks:
+  - task: sweep
+    episodes: 128
+    num_worlds: 16
+    max_chunks: 20
+    prompt: "sim_sweep away paper scraps from the table"
+
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+fps: 30
+video: true
+seed_base: 0

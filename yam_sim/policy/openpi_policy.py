@@ -38,7 +38,30 @@ class OpenPIPolicy:
     ) -> None:
         from openpi_client.websocket_client_policy import WebsocketClientPolicy
 
-        self._client = WebsocketClientPolicy(host=host, port=port, api_key=api_key)
+        # Optional fan-out over N identical servers on consecutive ports
+        # (port, port+1, ..., port+N-1). Per-world requests are then issued
+        # from a thread pool instead of sequentially, which is the wall-clock
+        # bottleneck for batched rollouts (one pi0 inference per world per
+        # chunk). Enabled via YAM_EVAL_SERVER_FANOUT=N; default 1 keeps the
+        # original single-connection sequential behavior.
+        import os
+
+        fanout = max(1, int(os.environ.get("YAM_EVAL_SERVER_FANOUT", "1")))
+        self._clients = [
+            WebsocketClientPolicy(host=host, port=port + i, api_key=api_key)
+            for i in range(fanout)
+        ]
+        self._client = self._clients[0]
+        self._pool = None
+        if fanout > 1:
+            import threading
+            from concurrent.futures import ThreadPoolExecutor
+
+            self._pool = ThreadPoolExecutor(max_workers=fanout)
+            # A websocket connection must serve one request at a time; a lock
+            # per client guards against two in-flight worlds colliding on the
+            # same connection (possible when tasks finish out of order).
+            self._locks = [threading.Lock() for _ in self._clients]
         self.action_dim = action_dim
         self.chunk_len = chunk_len  # filled in lazily on first inference if None
 
@@ -76,7 +99,7 @@ class OpenPIPolicy:
         prompts = self._prompts(obs.get("prompt"), batch_size)
         per_world_images = self._split_images(obs.get("images", {}), batch_size)
 
-        action_chunks: list[np.ndarray] = []
+        samples = []
         for i in range(batch_size):
             sample = {
                 "state": state_batch[i].astype(np.float32),
@@ -85,12 +108,27 @@ class OpenPIPolicy:
             for yam_key, openpi_key in _YAM_SIM_TO_OPENPI_CAM.items():
                 if yam_key in per_world_images:
                     sample[openpi_key] = per_world_images[yam_key][i]
+            samples.append(sample)
 
-            response = self._client.infer(sample)
+        def _infer_one(idx_sample):
+            idx, sample = idx_sample
+            k = idx % len(self._clients)
+            client = self._clients[k]
+            if self._pool is not None:
+                with self._locks[k]:
+                    response = client.infer(sample)
+            else:
+                response = client.infer(sample)
             actions = np.asarray(response["actions"], dtype=np.float32)
             # openpi YamOutputs already trims to first 14 dims.
-            actions = actions[:, : self.action_dim]
-            action_chunks.append(actions)
+            return actions[:, : self.action_dim]
+
+        if self._pool is not None and batch_size > 1:
+            # Round-robin worlds across the fanned-out servers; per-client
+            # locks keep each websocket connection single-request-in-flight.
+            action_chunks = list(self._pool.map(_infer_one, enumerate(samples)))
+        else:
+            action_chunks = [_infer_one(x) for x in enumerate(samples)]
 
         stacked = np.stack(action_chunks, axis=0)  # (B, T, 14)
         if self.chunk_len is None:

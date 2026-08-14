@@ -1,0 +1,20 @@
+# Paired eval v2 — vanilla arm. Fair horizon: max_seconds 80 covers p90 of the
+# training demos (39/57/78s at p10/median/p90); the earlier 20-chunk (13s)
+# protocol made success structurally impossible and was discarded.
+# Same seed range as the vanilla arm's config -> episode-level pairing.
+output_dir: /ephemeral/eval/sweep_pair_v2/vanilla
+
+tasks:
+  - task: sweep
+    episodes: 128
+    num_worlds: 128
+    prompt: "sim_sweep away paper scraps from the table"
+
+max_seconds: 80
+scene: hybrid
+execute_chunk_dim: 20
+prefix_length: 3
+use_ttrtc: true
+fps: 30
+video: false
+seed_base: 0

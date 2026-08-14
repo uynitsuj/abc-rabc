@@ -1,0 +1,12 @@
+output_dir: /ephemeral/eval/turn_mug_pair/rabc
+camera_gpu_id: 0
+force_object_count: 3
+video: false
+save_states: true
+seed_base: 0
+tasks:
+  - task: turn_mug_right_side_up
+    prompt: "Turn the mug right side up"
+    episodes: 128
+    num_worlds: 128
+    max_seconds: 130

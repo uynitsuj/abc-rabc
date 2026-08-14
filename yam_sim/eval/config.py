@@ -108,6 +108,14 @@ class EvalConfig:
     jpeg_quality: int = 0
     fps: int = 30
     video: bool = True
+    # When video=False, still save each episode's POLICY-INPUT frames (one per
+    # chunk, i.e. one per `execute_chunk_dim` steps — ~1.5Hz at the defaults) as
+    # seed_<n>_timelapse.mp4. These frames are already rendered for inference,
+    # so the only added cost is encoding; use them to triage which episodes
+    # deserve a full 30Hz offline re-render from the saved qpos trajectory.
+    timelapse: bool = True
+    # Playback fps for the timelapse clips (120 chunks -> 12s clip at 10fps).
+    timelapse_fps: int = 10
     # Save the full per-step MuJoCo qpos trajectory per episode (seed_<n>_qpos.npy,
     # shape (T, nq)) so completed rollouts can be deterministically re-rendered
     # offline (rerender_all.py) without re-simulating. Independent of `video`.

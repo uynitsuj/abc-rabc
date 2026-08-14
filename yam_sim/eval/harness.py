@@ -106,6 +106,12 @@ def _run_one_batch(
         video_paths = [task_dir / f"seed_{world_seeds[w]}.mp4" for w in record_worlds]
         writers = EpisodeVideoWriters(video_paths, fps=config.fps)
         writers.append(per_world_frames(obs, env.camera_names)[record_worlds])
+    # Timelapse from the policy-input frames (one per chunk): near-free triage
+    # videos when full per-step rendering is off. See EvalConfig.timelapse.
+    tl_writers = None
+    if not config.video and getattr(config, "timelapse", False):
+        tl_paths = [task_dir / f"seed_{world_seeds[w]}_timelapse.mp4" for w in record_worlds]
+        tl_writers = EpisodeVideoWriters(tl_paths, fps=getattr(config, "timelapse_fps", 10))
 
     init_q = np.asarray(obs["state"], dtype=np.float32)
     previous_chunk_actions = None
@@ -120,6 +126,8 @@ def _run_one_batch(
         qpos_frames.append(env.qpos_batch())
 
     for _chunk_idx in range(max_chunks):
+        if tl_writers is not None:
+            tl_writers.append(per_world_frames(obs, env.camera_names)[record_worlds])
         policy_obs = prepare_policy_obs(obs, prompt=prompt, jpeg_quality=config.jpeg_quality)
         action_prefix = None
         prefix_length = None
@@ -159,6 +167,8 @@ def _run_one_batch(
 
     if writers is not None:
         writers.close()
+    if tl_writers is not None:
+        tl_writers.close()
 
     task_eval = env.evaluate_task()
     info_dict = task_eval.to_info(squeeze=False) if task_eval is not None else {}
