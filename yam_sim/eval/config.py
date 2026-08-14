@@ -144,6 +144,37 @@ class EvalConfig:
     # these mugs -- attributes tree contacts correctly. Pose-only, fixed count, one fixed
     # colored look; mutually exclusive with force_object_count / visual_group_size.
     mug_inline: bool = False
+    # Stop stepping a batch once every recorded world's task success has held
+    # for a short window (0.5 s), and truncate each world's saved qpos just
+    # past its success moment. Big wall-clock win for tasks that finish early;
+    # off by default to preserve the canonical fixed-horizon behavior.
+    early_stop_on_success: bool = False
+    # Send all active worlds' observations in ONE batched request per chunk
+    # (one batched pi0 forward) instead of sequential per-world calls. Requires
+    # the openpi server to support infer_batch (openpi branch
+    # karim/batched-inference). Batched sampling draws RNG differently than
+    # sequential, so results are not bit-identical across the two modes.
+    batched_inference: bool = False
+    # When failure injection is active: number of ADDITIONAL attempts to re-run
+    # a seed whose injection did not produce a verified drop (slip_outcome
+    # accidental_bin / not_released). Failed-injection attempts are not
+    # recorded; the seed re-rolls (same scene, fresh policy sampling) in packed
+    # retry batches until a verified outcome or attempts run out, at which
+    # point the final attempt is recorded regardless. 0 = record first attempt.
+    retry_failed_injection: int = 0
+    # Weight + damp the free-jointed bin so recovery-phase arm bumps don't knock
+    # it over (make_batched_env(bin_stabilize=...)), e.g. {mass_kg: 3.0, damping: 5.0}.
+    # None = stock 0.15 kg undamped bin.
+    bin_stabilize: dict[str, Any] | None = None
+    # Extra randomization request keys merged into every env reset (construction
+    # and per-world), passed through make_batched_env(extra_reset_options=...).
+    # e.g. {bottle_spawn: opposite_bin} for put_bottles. None = defaults.
+    reset_options: dict[str, Any] | None = None
+    # Mid-rollout failure injection (eval/failure_injection.py). A mapping with a
+    # ``type`` key (currently only "grasp_slip") plus that injector's config fields,
+    # e.g. {type: grasp_slip, bin_edge_distance_m: 0.10, open_window_s: 0.5}.
+    # None = no injection (nominal eval).
+    failure_injection: dict[str, Any] | None = None
     # Pin ONE visual config (mesh variant + scale + color, seeded by this value) for the
     # whole run while sharding by POSITION via the standard seed_base/num_worlds loop.
     # Unlike visual_group_size (which ties visual_seed to seed_base//gs and forces

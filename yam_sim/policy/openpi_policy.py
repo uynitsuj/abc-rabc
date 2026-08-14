@@ -35,6 +35,7 @@ class OpenPIPolicy:
         api_key: Optional[str] = None,
         action_dim: int = 14,
         chunk_len: Optional[int] = None,
+        use_batch_infer: bool = False,
     ) -> None:
         from openpi_client.websocket_client_policy import WebsocketClientPolicy
 
@@ -64,6 +65,12 @@ class OpenPIPolicy:
             self._locks = [threading.Lock() for _ in self._clients]
         self.action_dim = action_dim
         self.chunk_len = chunk_len  # filled in lazily on first inference if None
+        # Batched inference: send all worlds in one request (requires a
+        # batch-aware openpi server, see Policy.infer_batch). Requests are
+        # padded up to the largest batch seen so far so the server's jitted
+        # model compiles for ONE batch shape instead of one per active count.
+        self.use_batch_infer = use_batch_infer
+        self._batch_pad = 0
 
     def set_task(self, task: Optional[str]) -> None:
         """No-op; the prompt is sent inside ``infer`` per call."""
@@ -80,7 +87,10 @@ class OpenPIPolicy:
         """Run inference on one or many worlds via the openpi server.
 
         The openpi websocket server processes a single observation per call, so a
-        batched obs is split, sent sequentially, then re-stacked.
+        batched obs is split per world, dispatched, then re-stacked. Dispatch is
+        sequential by default; ``use_batch_infer`` sends one batched request
+        instead, and YAM_EVAL_SERVER_FANOUT>1 spreads the per-world calls over
+        several servers.
         """
         state_np = np.asarray(obs["state"], dtype=np.float32)
         if state_np.ndim == 1:
@@ -99,7 +109,7 @@ class OpenPIPolicy:
         prompts = self._prompts(obs.get("prompt"), batch_size)
         per_world_images = self._split_images(obs.get("images", {}), batch_size)
 
-        samples = []
+        samples: list[dict] = []
         for i in range(batch_size):
             sample = {
                 "state": state_batch[i].astype(np.float32),
@@ -123,7 +133,18 @@ class OpenPIPolicy:
             # openpi YamOutputs already trims to first 14 dims.
             return actions[:, : self.action_dim]
 
-        if self._pool is not None and batch_size > 1:
+        action_chunks: list[np.ndarray] = []
+        if self.use_batch_infer and batch_size > 1:
+            # Server-side batching and client-side fanout are alternative ways
+            # to hide the same per-world latency, so this path talks to a single
+            # server and YAM_EVAL_SERVER_FANOUT is ignored while it is on.
+            self._batch_pad = max(self._batch_pad, batch_size)
+            padded = samples + [samples[-1]] * (self._batch_pad - batch_size)
+            responses = self._client.infer_batch(padded)[:batch_size]
+            for response in responses:
+                actions = np.asarray(response["actions"], dtype=np.float32)
+                action_chunks.append(actions[:, : self.action_dim])
+        elif self._pool is not None and batch_size > 1:
             # Round-robin worlds across the fanned-out servers; per-client
             # locks keep each websocket connection single-request-in-flight.
             action_chunks = list(self._pool.map(_infer_one, enumerate(samples)))

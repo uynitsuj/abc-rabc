@@ -244,6 +244,10 @@ class WaterBottleResetRequest:
     cycle_bottle: int = 0
     randomize_variants: bool | None = None
     randomize_scales: bool | None = None
+    # Where bottles may spawn: None/"anywhere" = full table (default);
+    # "opposite_bin" = only the table half on the far side (in y) of the
+    # sampled bin position.
+    bottle_spawn: str | None = None
 
     @classmethod
     def from_value(cls, value: Any | None) -> "WaterBottleResetRequest":
@@ -276,6 +280,13 @@ class WaterBottleResetRequest:
 
         raw_count = value.get("bottle_count")
         raw_cycle = value.get("cycle_bottle", 0)
+        raw_spawn = value.get("bottle_spawn")
+        if raw_spawn is not None:
+            raw_spawn = str(raw_spawn)
+            if raw_spawn not in ("anywhere", "opposite_bin"):
+                raise ValueError(
+                    f"bottle_spawn must be 'anywhere' or 'opposite_bin', got {raw_spawn!r}"
+                )
         return cls(
             bottle_variant=None if raw_variant is None else str(raw_variant),
             bottle_variants=bottle_variants,
@@ -283,6 +294,7 @@ class WaterBottleResetRequest:
             cycle_bottle=0 if raw_cycle is None else int(raw_cycle),
             randomize_variants=randomize_variants,
             randomize_scales=randomize_scales,
+            bottle_spawn=raw_spawn,
         )
 
 
@@ -1070,6 +1082,13 @@ class WaterBottleRandomizer(SceneRandomizer):
 
     min_bottle_count = 2
     max_bottle_count = 6
+    # Floor for an EXPLICITLY requested bottle_count (reset options /
+    # force_object_count). The seed-driven random draw still uses
+    # [min_bottle_count, max_bottle_count], so default behavior is unchanged.
+    forced_min_bottle_count = 1
+    # "opposite_bin" spawn: bottles keep this much clearance (m) past the table
+    # centerline on the far side (in y) of the sampled bin position.
+    opposite_bin_y_buffer_m = 0.15
     bottle_scale_factor = (0.90, 1.10)
     bin_scale_factor = (1.00, 1.40)
     table_edge_bounds: tuple[float, float, float, float] = (
@@ -1129,6 +1148,7 @@ class WaterBottleRandomizer(SceneRandomizer):
     ) -> RandomizationState:
         rng = np.random.default_rng(seed)
         reset_request = WaterBottleResetRequest.from_value(request)
+        self._current_bottle_spawn = reset_request.bottle_spawn
         bottle_variants = self._resolve_bottle_variants(rng, reset_request)
         self._set_active_bottle_count(len(bottle_variants))
         should_randomize_scales = (
@@ -1263,10 +1283,10 @@ class WaterBottleRandomizer(SceneRandomizer):
         return count
 
     def _validate_bottle_count(self, count: int) -> None:
-        if not self.min_bottle_count <= count <= self.max_bottle_count:
+        if not self.forced_min_bottle_count <= count <= self.max_bottle_count:
             raise ValueError(
                 f"{type(self).__name__} bottle_count must be in "
-                f"[{self.min_bottle_count}, {self.max_bottle_count}], got {count}"
+                f"[{self.forced_min_bottle_count}, {self.max_bottle_count}], got {count}"
             )
 
     def _set_active_bottle_count(self, bottle_count: int) -> None:
@@ -1632,6 +1652,8 @@ class WaterBottleRandomizer(SceneRandomizer):
         bin_state = self._sample_bin_state(nominals, rng)
         states[self._bin_perturbation.joint_name] = bin_state
         bin_entry = self._bin_footprint(bin_state)
+        opposite_bin = getattr(self, "_current_bottle_spawn", None) == "opposite_bin"
+        bin_y = float(bin_state["pos"][1])
 
         for index, perturbation in enumerate(self._bottle_perturbations[:self._current_active_bottle_count]):
             variant_name = (
@@ -1655,6 +1677,11 @@ class WaterBottleRandomizer(SceneRandomizer):
                 x_hi = x_max - self.table_margin_m - extent_x
                 y_lo = y_min + self.table_margin_m + extent_y
                 y_hi = y_max - self.table_margin_m - extent_y
+                if opposite_bin:
+                    if bin_y >= 0.0:
+                        y_hi = min(y_hi, -self.opposite_bin_y_buffer_m - extent_y)
+                    else:
+                        y_lo = max(y_lo, self.opposite_bin_y_buffer_m + extent_y)
                 if x_lo > x_hi or y_lo > y_hi:
                     break
 
@@ -6498,10 +6525,10 @@ def _build_water_bottle_scene_xml(
     base_scene_xml: str | None,
     base_scene_dir: _Path | None,
 ) -> str:
-    if not WaterBottleRandomizer.min_bottle_count <= len(bottle_variants) <= WaterBottleRandomizer.max_bottle_count:
+    if not WaterBottleRandomizer.forced_min_bottle_count <= len(bottle_variants) <= WaterBottleRandomizer.max_bottle_count:
         raise ValueError(
             "put_bottles requires between "
-            f"{WaterBottleRandomizer.min_bottle_count} and "
+            f"{WaterBottleRandomizer.forced_min_bottle_count} and "
             f"{WaterBottleRandomizer.max_bottle_count} bottle variants, got {len(bottle_variants)}"
         )
 
