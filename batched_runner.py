@@ -459,6 +459,10 @@ if __name__ == "__main__":
     ap.add_argument("--shard", type=int, default=0)
     ap.add_argument("--pi0-config", default=None, help="openpi TrainConfig name -> in-process batched pi0")
     ap.add_argument("--pi0-ckpt", default=None, help="checkpoint params dir for --pi0-config")
+    ap.add_argument("--obs-condition", type=float, default=None,
+                    help="explicit condition per obs (nan = unconditional/CFG-null branch)")
+    ap.add_argument("--cfg-weight", type=float, default=None,
+                    help="CFG guidance weight w (needs velocity_condition ckpt); None = plain")
     a = ap.parse_args()
     policy = None
     if a.pi0_config:
@@ -466,7 +470,8 @@ if __name__ == "__main__":
         os.environ.setdefault("XLA_PYTHON_CLIENT_MEM_FRACTION", "0.35")
         from abc_minimal.eval_policy import PI0_CAMERA_KEY_MAP, PI0_PROMPT
         from batched_policy import BatchedPi0
-        policy = BatchedPi0(a.pi0_config, a.pi0_ckpt, PI0_PROMPT, PI0_CAMERA_KEY_MAP)
+        policy = BatchedPi0(a.pi0_config, a.pi0_ckpt, PI0_PROMPT, PI0_CAMERA_KEY_MAP,
+                            condition=a.obs_condition, cfg_weight=a.cfg_weight)
     t0 = time.perf_counter()
     res = run_batched(a.seeds, policy=policy, steps=a.steps, despawn_n=a.despawn, gpu=a.gpu)
     dt = time.perf_counter() - t0

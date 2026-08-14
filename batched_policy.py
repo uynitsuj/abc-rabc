@@ -26,16 +26,19 @@ class BatchedPi0:
     needs_images = True
 
     def __init__(self, config_name: str, ckpt_dir: str, prompt: str,
-                 camera_key_map: dict[str, str]):
+                 camera_key_map: dict[str, str], condition: float | None = None,
+                 cfg_weight: float | None = None):
         import jax
         from openpi.policies import policy_config
         from openpi.training import config as _config
 
         self._jax = jax
         cfg = _config.get_config(config_name)
-        self.policy = policy_config.create_trained_policy(cfg, ckpt_dir)
+        sample_kwargs = {"cfg_weight": cfg_weight} if cfg_weight is not None else None
+        self.policy = policy_config.create_trained_policy(cfg, ckpt_dir, sample_kwargs=sample_kwargs)
         self.prompt = prompt
         self.camera_key_map = dict(camera_key_map)
+        self.condition = condition  # explicit o-bit/NaN override; None = config default
 
     def make_obs(self, state_rows: np.ndarray, images: dict[str, np.ndarray]):
         """state_rows [B,K] f32; images {env_key: [B,3,H,W] uint8} -> list of per-world
@@ -44,6 +47,8 @@ class BatchedPi0:
         obs_list = []
         for w in range(B):
             o = {"state": np.asarray(state_rows[w], np.float32), "prompt": self.prompt}
+            if self.condition is not None:
+                o["condition"] = np.float32(self.condition)  # NaN = unconditional branch
             for env_key, server_key in self.camera_key_map.items():
                 if env_key in images:
                     o[server_key] = np.ascontiguousarray(images[env_key][w])
