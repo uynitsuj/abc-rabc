@@ -33,7 +33,7 @@ class BatchedPi0:
 
         self._jax = jax
         cfg = _config.get_config(config_name)
-        self.policy = policy_config.create_trained_policy(cfg, ckpt_dir, sample_kwargs=sample_kwargs)
+        self.policy = policy_config.create_trained_policy(cfg, ckpt_dir)
         self.prompt = prompt
         self.camera_key_map = dict(camera_key_map)
 
