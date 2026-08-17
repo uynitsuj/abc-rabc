@@ -278,6 +278,7 @@ class BatchedRunResult:
     records: list
     qpos_traces: np.ndarray  # [B, T, nq] fp16
     rand_records: list = None
+    action_traces: np.ndarray = None  # [B, T, nu] fp16 -- the ctrl actually applied
 
 
 def _jsonable(x):
@@ -311,7 +312,11 @@ def write_trace_dir(out_root, arm, seeds, res: BatchedRunResult,
     paths = []
     for w, seed in enumerate(seeds):
         p = out_dir / f"qpos_trace_{w:03d}_s{int(seed)}.npz"
-        np.savez_compressed(p, qpos=res.qpos_traces[w])
+        if getattr(res, "action_traces", None) is not None:
+            np.savez_compressed(p, qpos=res.qpos_traces[w],
+                                actions=res.action_traces[w])
+        else:
+            np.savez_compressed(p, qpos=res.qpos_traces[w])
         paths.append(str(p))
     summary = {
         "arm": arm,
@@ -411,6 +416,9 @@ def run_batched(seeds, policy=None, steps=1800, despawn_n=0,
         return policy.infer_batch(o) if needs_images else policy.infer(o)
 
     traces = []
+    act_traces = []          # the ctrl actually applied, for re-ingestion:
+                             # archived traces are qpos-only, which is not
+                             # enough to train a policy on.
     actions = replan()
     ai = 0
     for step in range(steps):
@@ -435,6 +443,7 @@ def run_batched(seeds, policy=None, steps=1800, despawn_n=0,
                 wp.copy(dw.qvel, wp.from_numpy(v.astype(np.float32), dtype=wp.float32))
         if trace:
             traces.append(q.astype(np.float16))
+            act_traces.append(ctrl[:, ctrl_indices].astype(np.float16))
 
     recs = ev.world_records(seeds)
     if despawn_n:
@@ -444,6 +453,8 @@ def run_batched(seeds, policy=None, steps=1800, despawn_n=0,
                                 despawn_repins=int(desp.repins[w]))
     return BatchedRunResult(records=recs,
                             qpos_traces=np.stack(traces, axis=1) if trace else None,
+                            action_traces=(np.stack(act_traces, axis=1)
+                                           if trace and act_traces else None),
                             rand_records=rand_records)
 
 
