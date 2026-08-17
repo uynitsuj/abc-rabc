@@ -149,6 +149,17 @@ def scene_xml(scene: PutBottlesSimConfig, bottle_scales: np.ndarray, bin_scale: 
 # Environment and metrics.
 
 
+
+# the training prompt explicitly rather than passing obs["prompt"] through.
+PI0_PROMPT = "Put the plastic bottles in the bin"
+
+# Map ABC env camera_keys -> openpi YAM server camera keys.
+PI0_CAMERA_KEY_MAP = {
+    "top": "top_camera-images-rgb",
+    "left": "left_camera-images-rgb",
+    "right": "right_camera-images-rgb",
+}
+
 class PutBottlesEvaluator:
     def __init__(self, model: mujoco.MjModel, scene: PutBottlesSimConfig):
         self.model = model
